@@ -1,0 +1,25 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.fingerstyleguitartuner.MainActivity">
+    <item
+        android:id="@+id/open"
+        android:orderInCategory="100"
+        android:title="Open"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/play"
+        android:orderInCategory="100"
+        android:title="Play"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/edit"
+        android:orderInCategory="100"
+        android:title="Edit"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/delete"
+        android:orderInCategory="100"
+        android:title="Delete"
+        app:showAsAction="never"/>
+</menu>

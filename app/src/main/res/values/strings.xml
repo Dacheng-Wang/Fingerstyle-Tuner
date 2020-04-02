@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">FingerstyleGuitarTuner</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="play_tune">Play Tune</string>
+    <string name="sharp">#</string>
+    <string name="hint">Please Enter a Name of Your Tuning</string>
+    <string name="button_add">Add a String</string>
+    <string name="button_delete">Delete a String</string>
+    <string name="rounding">%.2f</string>
+    <string name="frequency">%1$s Hz</string>
+    <string name="string_number">String #%1$s</string>
+    //List of tune letters
+    <string-array name="tuneLetterList">
+        <item>C</item>
+        <item>D</item>
+        <item>E</item>
+        <item>F</item>
+        <item>G</item>
+        <item>A</item>
+        <item>B</item>
+    </string-array>
+    //List of tune numbers
+    <string-array name="tuneNumberList">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+</resources>
