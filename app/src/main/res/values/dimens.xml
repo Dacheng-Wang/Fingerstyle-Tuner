@@ -2,4 +2,26 @@
     <dimen name="fab_margin">16dp</dimen>
     <!--Floating action button-->
     <dimen name="design_fab_image_size" tools:override="true">36dp</dimen>
+
+    <dimen name="spacing_small">16dp</dimen>
+    <dimen name="spacing_medium">24dp</dimen>
+
+    <dimen name="text_size_xsmall">14sp</dimen>
+    <dimen name="text_size_small">16sp</dimen>
+    <dimen name="text_size_medium">24sp</dimen>
+    <dimen name="text_size_large">128sp</dimen>
+
+    <dimen name="permission_title_top_margin">80dp</dimen>
+
+    <dimen name="toolbar_elevation">4dp</dimen>
+
+    <dimen name="circle_tuner_view_default_min_size">400dp</dimen>
+    <dimen name="circle_tuner_view_default_shadow_x">5dp</dimen>
+    <dimen name="circle_tuner_view_default_shadow_y">5dp</dimen>
+    <dimen name="circle_tuner_view_default_radius">7dp</dimen>
+
+    <dimen name="permission_circle_size">256dp</dimen>
+    <dimen name="permission_microphone_size">256dp</dimen>
+
+    <dimen name="horizontal_divider_height">1dp</dimen>
 </resources>

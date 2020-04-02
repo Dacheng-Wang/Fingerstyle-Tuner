@@ -2,8 +2,10 @@ package com.example.fingerstyleguitartuner
 
 import `in`.excogitation.zentone.library.ToneStoppedListener
 import `in`.excogitation.zentone.library.ZenTone
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.ContextMenu
 import android.view.ContextMenu.ContextMenuInfo
@@ -11,6 +13,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fingerstyleguitartuner.ui.MyAdapter
@@ -115,6 +119,29 @@ class MainActivity : AppCompatActivity() {
         recyclerView.addOnItemTouchListener(
             RecyclerItemClickListener(this, recyclerView, object : RecyclerItemClickListener.OnItemClickListener {
                 override fun onItemClick(view: View?, position: Int) {
+                    // Here, thisActivity is the current activity
+                    if (ContextCompat.checkSelfPermission(this@MainActivity,
+                            Manifest.permission.READ_CONTACTS)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+                        // Permission is not granted
+                        // Should we show an explanation?
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(this@MainActivity,
+                                Manifest.permission.RECORD_AUDIO)) {
+                            // Show an explanation to the user *asynchronously* -- don't block
+                            // this thread waiting for the user's response! After the user
+                            // sees the explanation, try again to request the permission.
+                        } else {
+                            // No explanation needed, we can request the permission.
+                            ActivityCompat.requestPermissions(this@MainActivity,
+                                arrayOf(Manifest.permission.RECORD_AUDIO),
+                                1)
+                        }
+                    } else {
+                        // Permission has already been granted
+                        val intent = Intent(this@MainActivity, DisplayTuner::class.java)
+                        startActivity(intent)
+                    }
                 }
 
                 override fun onLongItemClick(view: View?, position: Int) {
@@ -126,6 +153,18 @@ class MainActivity : AppCompatActivity() {
         fab.setOnClickListener {
             val intent = Intent(this@MainActivity, AddTune::class.java)
             startActivityForResult(intent, LAUNCH_ADD_TUNE)
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            1 -> {
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    val intent = Intent(this@MainActivity, DisplayTuner::class.java)
+                    startActivity(intent)
+                }
+            }
         }
     }
 
@@ -225,7 +264,16 @@ class MainActivity : AppCompatActivity() {
             R.id.play ->
             {
                 for (frequency in frequencyLists[tuneIndex]) {
-                    ZenTone.getInstance().generate(frequency.toInt(), 1, 1.0f, ToneStoppedListener {})
+                    var gain = 0F
+                    if (frequency < 100) gain = 1F
+                    else if (frequency < 150) gain = 0.6F
+                    else if (frequency < 200) gain = 0.5F
+                    else if (frequency < 250) gain = 0.4F
+                    else if (frequency < 300) gain = 0.3F
+                    else if (frequency < 360) gain = 0.2F
+                    else if (frequency < 400) gain = 0.1F
+                    else gain = 0.05F
+                    ZenTone.getInstance().generate(frequency.toInt(), 1, gain) {}
                     ZenTone.getInstance().stop()
                     TimeUnit.SECONDS.sleep(1)
                 }

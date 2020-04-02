@@ -26,11 +26,24 @@
     </string-array>
     //List of tune numbers
     <string-array name="tuneNumberList">
-        <item>0</item>
-        <item>1</item>
         <item>2</item>
         <item>3</item>
         <item>4</item>
         <item>5</item>
+    </string-array>
+
+    <string-array name="circle_tuner_view_notes">
+        <item>C</item>
+        <item>C\u266F</item>
+        <item>D</item>
+        <item>D\u266F</item>
+        <item>E</item>
+        <item>F</item>
+        <item>F\u266F</item>
+        <item>G</item>
+        <item>G\u266F</item>
+        <item>A</item>
+        <item>A\u266F</item>
+        <item>B</item>
     </string-array>
 </resources>

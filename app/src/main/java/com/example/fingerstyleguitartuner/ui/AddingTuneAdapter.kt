@@ -1,8 +1,8 @@
 package com.example.fingerstyleguitartuner.ui
 
+import `in`.excogitation.zentone.library.ToneStoppedListener
+import `in`.excogitation.zentone.library.ZenTone
 import android.content.Context
-import android.media.AudioFormat
-import android.os.Build
 import android.view.*
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.widget.*
@@ -21,7 +21,7 @@ import com.example.fingerstyleguitartuner.R
 import kotlin.math.pow
 
 
-public class AddingTuneAdapter(private val tuneList: ArrayList<String>, private val letterList: ArrayList<String>? = null,
+class AddingTuneAdapter(private val tuneList: ArrayList<String>, private val letterList: ArrayList<String>? = null,
                                private val numberList: ArrayList<Int>? = null, private val sharpList: ArrayList<Int>? = null) :
     RecyclerView.Adapter<AddingTuneAdapter.AddingTuneViewHolder>() {
     // Provide a reference to the views for each data item
@@ -111,27 +111,7 @@ public class AddingTuneAdapter(private val tuneList: ArrayList<String>, private 
         tunePlay = view.findViewById<ImageButton>(R.id.tune_play)
         tunePlay.setOnClickListener {
             refreshSelected(parent.context, it, true)
-            val generator = AudioGenerator(1024, 0)
-            generator.addAudioProcessor(NoiseGenerator(0.2))
-            generator.addAudioProcessor(LowPassFS(1000F, 44100F))
-            generator.addAudioProcessor(LowPassFS(1000F, 44100F))
-            generator.addAudioProcessor(LowPassFS(1000F, 44100F))
-            generator.addAudioProcessor(SineGenerator(0.05, 220.0))
-            generator.addAudioProcessor(AmplitudeLFO(10.0, 0.9))
-            generator.addAudioProcessor(SineGenerator(0.2, 440.0))
-            generator.addAudioProcessor(SineGenerator(0.1, 880.0))
-            generator.addAudioProcessor(DelayEffect(1.5, 0.4, 44100.0))
-            generator.addAudioProcessor(AmplitudeLFO())
-            generator.addAudioProcessor(NoiseGenerator(0.02))
-            generator.addAudioProcessor(SineGenerator(0.05, 1760.0))
-            generator.addAudioProcessor(SineGenerator(0.01, 2460.0))
-            generator.addAudioProcessor(AmplitudeLFO(0.1, 0.7))
-            generator.addAudioProcessor(DelayEffect(0.757, 0.4, 44100.0))
-            generator.addAudioProcessor(FlangerEffect(0.1, 0.2, 44100.0, 4.0))
-            val format = TarsosDSPAudioFormat(44100F, 16, 1, true, false)
-            generator.addAudioProcessor(AndroidAudioPlayer(format))
-            generator.run()
-            //ZenTone.getInstance().generate((frequencyTextView.tag as Float).toInt(), 1, 1.0f, ToneStoppedListener {})
+            produceSoundFromFrequency(frequencyTextView.tag as Float, 1)
         }
 
         // set the view's size, margins, paddings and layout parameters
@@ -150,7 +130,7 @@ public class AddingTuneAdapter(private val tuneList: ArrayList<String>, private 
     }
 
     fun refreshSelected(context: Context, viewChild: View, isOnClick: Boolean) {
-        var view: ViewGroup = (if (isOnClick) {
+        val view: ViewGroup = (if (isOnClick) {
             viewChild.parent
         } else {
             viewChild.parent.parent
@@ -223,7 +203,7 @@ fun calculateFrequency(noteLetter: String, noteNumber: Int): Float{
     val step = 2.toFloat().pow(exp)
     val scaleDiff = noteNumber - 4
     //convert letter to number; C -> 1
-    var noteLetterNumber: Int = 0
+    var noteLetterNumber = 0
     when (noteLetter.first()){
         'C' -> noteLetterNumber = 1
         'D' -> noteLetterNumber = 3
@@ -237,5 +217,41 @@ fun calculateFrequency(noteLetter: String, noteNumber: Int): Float{
     if (noteLetter.length > 1){
         stepDiff += 1
     }
-    return (baseFrequency * (step.pow(stepDiff))).toFloat()
+    return (baseFrequency * (step.pow(stepDiff)))
+}
+
+fun produceSoundFromFrequency(frequency: Float, seconds: Int) {
+    /*val generator = AudioGenerator(1024, 0)
+    var gain = 0.0
+    if (frequency < 100) gain = 0.0
+    else if (frequency < 150) gain = 0.6
+    else if (frequency < 200) gain = 0.5
+    else if (frequency < 250) gain = 0.4
+    else if (frequency < 300) gain = 0.3
+    else if (frequency < 360) gain = 0.2
+    else if (frequency < 400) gain = 0.1
+    else gain = 0.05
+    generator.addAudioProcessor(SineGenerator(gain, frequency.toDouble()))
+    generator.addAudioProcessor(LowPassFS(frequency, 44100F))
+    val format = TarsosDSPAudioFormat(44100F, 16, 1, true, false)
+    generator.addAudioProcessor(AndroidAudioPlayer(format))*/
+    /*val t = Thread(generator)
+    t.start()
+    try {
+        Thread.sleep(seconds * 1000)
+    }
+    catch (e: InterruptedException) {
+        e.printStackTrace()
+    }
+    generator.stop()*/
+    var gain = 0F
+    if (frequency < 100) gain = 1F
+    else if (frequency < 150) gain = 0.6F
+    else if (frequency < 200) gain = 0.5F
+    else if (frequency < 250) gain = 0.4F
+    else if (frequency < 300) gain = 0.3F
+    else if (frequency < 360) gain = 0.2F
+    else if (frequency < 400) gain = 0.1F
+    else gain = 0.05F
+    ZenTone.getInstance().generate(frequency.toInt(), seconds, gain) {  }
 }
