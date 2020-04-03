@@ -14,7 +14,9 @@ import com.example.fingerstyleguitartuner.ui.view.TunerPitchToggleView
 
 
 class DisplayTuner : AppCompatActivity(), TunerPitchToggleView {
-    private val circleGuitarTunerFragment = CircleGuitarTunerFragment.newInstance()
+    private lateinit var circleGuitarTunerFragment: CircleGuitarTunerFragment
+    private lateinit var note: ArrayList<String>
+    private lateinit var frequency: FloatArray
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_display_tuner)
@@ -25,7 +27,16 @@ class DisplayTuner : AppCompatActivity(), TunerPitchToggleView {
             val pitchInHz = result.pitch
             runOnUiThread {
                 val text = findViewById<View>(R.id.textView1) as TextView
-                text.text = "" + pitchInHz
+                text.text = pitchInHz.toString()
+            }
+        }
+
+        note = intent.getStringArrayListExtra("note")
+        frequency = intent.getFloatArrayExtra("frequency")
+        circleGuitarTunerFragment = CircleGuitarTunerFragment.newInstance().apply {
+            arguments = Bundle().apply {
+                putStringArrayList("notes", note)
+                putFloatArray("frequency", frequency)
             }
         }
         val p: AudioProcessor = PitchProcessor(PitchEstimationAlgorithm.FFT_YIN, 22050F, 1024, pdh)
@@ -36,10 +47,8 @@ class DisplayTuner : AppCompatActivity(), TunerPitchToggleView {
 
     override fun showGuitarTuner() {
         supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, circleGuitarTunerFragment).commit()
-
     }
 
     override fun showPitchPlayback(note: String?, frequency: Double, x: Float, y: Float, animate: Boolean) {
-
     }
 }

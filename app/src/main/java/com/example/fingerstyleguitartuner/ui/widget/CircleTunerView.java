@@ -23,6 +23,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.example.fingerstyleguitartuner.R;
+import com.example.fingerstyleguitartuner.ui.fragment.CircleGuitarTunerFragment;
 import com.example.fingerstyleguitartuner.ui.view.TunerWidgetView;
 
 import java.lang.annotation.ElementType;
@@ -38,11 +39,9 @@ import butterknife.BindDimen;
 import butterknife.ButterKnife;
 
 public class CircleTunerView extends View implements TunerWidgetView {
-
     public static final int IN_TUNE = 0;
     public static final int OUT_OF_TUNE = 1;
     public static final int UNDEFINED = 2;
-
     private static final float RADIANS_90 = (float) Math.toRadians(90);
     private static final float RADIANS_360 = (float) Math.toRadians(360);
 
@@ -128,23 +127,23 @@ public class CircleTunerView extends View implements TunerWidgetView {
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public CircleTunerView(Context context) {
-        this(context, null, 0, 0);
+        this(context, null, 0, 0, "");
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public CircleTunerView(Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, 0, 0);
+        this(context, attrs, 0, 0, "");
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public CircleTunerView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        this(context, attrs, defStyleAttr, 0);
+        this(context, attrs, defStyleAttr, 0, "");
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public CircleTunerView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public CircleTunerView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes, String note) {
         super(context, attrs, defStyleAttr, defStyleRes);
-
+        currentNoteName = note;
         ButterKnife.bind(this);
 
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CircleTunerView, defStyleAttr, defStyleRes);
@@ -279,7 +278,7 @@ public class CircleTunerView extends View implements TunerWidgetView {
         canvas.drawCircle(centerX, centerY, innerCircleRadius, innerCirclePaint);
 
         // Draw the text on the inner circle
-        canvas.drawText(currentNoteName, centerX, centerTextY, centerTextPaint);
+        canvas.drawText(currentNoteName, centerX, centerY + textBounds.exactCenterY(), centerTextPaint);
     }
 
     @Override
@@ -373,6 +372,7 @@ public class CircleTunerView extends View implements TunerWidgetView {
 
             updateTuningState(percentOffset);
             updateIndicatorAngle(angle);
+
         }
     }
 

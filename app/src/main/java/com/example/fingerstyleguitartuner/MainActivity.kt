@@ -4,6 +4,7 @@ import `in`.excogitation.zentone.library.ToneStoppedListener
 import `in`.excogitation.zentone.library.ZenTone
 import android.Manifest
 import android.app.Activity
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -12,6 +13,7 @@ import android.view.ContextMenu.ContextMenuInfo
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -121,7 +123,7 @@ class MainActivity : AppCompatActivity() {
                 override fun onItemClick(view: View?, position: Int) {
                     // Here, thisActivity is the current activity
                     if (ContextCompat.checkSelfPermission(this@MainActivity,
-                            Manifest.permission.READ_CONTACTS)
+                            Manifest.permission.RECORD_AUDIO)
                         != PackageManager.PERMISSION_GRANTED) {
 
                         // Permission is not granted
@@ -131,6 +133,36 @@ class MainActivity : AppCompatActivity() {
                             // Show an explanation to the user *asynchronously* -- don't block
                             // this thread waiting for the user's response! After the user
                             // sees the explanation, try again to request the permission.
+                            lateinit var dialog: AlertDialog
+
+
+                            // Initialize a new instance of alert dialog builder object
+                            val builder = AlertDialog.Builder(this@MainActivity)
+
+                            // Set a title for alert dialog
+                            builder.setTitle(title)
+
+                            // Set a message for alert dialog
+                            builder.setMessage("Without this permission, the app is unable to detect the tuning of your instrument.")
+
+                            // On click listener for dialog buttons
+                            val dialogClickListener = DialogInterface.OnClickListener{ _, which ->
+                                when(which){
+                                    DialogInterface.BUTTON_POSITIVE -> {
+                                        ActivityCompat.requestPermissions(this@MainActivity,
+                                            arrayOf(Manifest.permission.RECORD_AUDIO), 1)
+                                    }
+                                    DialogInterface.BUTTON_NEUTRAL -> {}
+                                }
+                            }
+                            // Set the alert dialog positive/yes button
+                            builder.setPositiveButton("RE-TRY",dialogClickListener)
+                            // Set the alert dialog neutral/cancel button
+                            builder.setNeutralButton("CANCEL",dialogClickListener)
+                            // Initialize the AlertDialog using builder object
+                            dialog = builder.create()
+                            // Finally, display the alert dialog
+                            dialog.show()
                         } else {
                             // No explanation needed, we can request the permission.
                             ActivityCompat.requestPermissions(this@MainActivity,
@@ -140,6 +172,9 @@ class MainActivity : AppCompatActivity() {
                     } else {
                         // Permission has already been granted
                         val intent = Intent(this@MainActivity, DisplayTuner::class.java)
+                        val noteList = combineLetterAndSharp(letterLists[position], sharpLists[position])
+                        intent.putExtra("note", noteList)
+                        intent.putExtra("frequency", frequencyLists[position])
                         startActivity(intent)
                     }
                 }
