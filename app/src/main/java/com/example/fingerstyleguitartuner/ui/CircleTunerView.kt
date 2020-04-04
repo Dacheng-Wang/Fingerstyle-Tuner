@@ -5,11 +5,12 @@ import android.graphics.*
 import android.os.Build
 import android.util.AttributeSet
 import android.view.View
+import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
-import com.example.fingerstyleguitartuner.R
-import com.example.fingerstyleguitartuner.frequency
-import com.example.fingerstyleguitartuner.note
+import be.tarsos.dsp.util.PitchConverter
+import com.example.fingerstyleguitartuner.*
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -34,10 +35,14 @@ class CircleTunerView: View {
     private val indicatorPoint1 = PointF()
     private val indicatorPoint2 = PointF()
     private val indicatorPoint3 = PointF()
+    private val indicator2Point1 = PointF()
+    private val indicator2Point2 = PointF()
+    private val indicator2Point3 = PointF()
     private val notePositions = ArrayList<NotePosition>()
     private val notes = resources.getStringArray(R.array.circle_tuner_view_notes)
     private var angleIntervalRadians = 0f
     private var currentNoteName = ""
+    private var currentIndex = 0
     private val RADIANS_90 = Math.toRadians(90.0).toFloat()
     private val RADIANS_360 = Math.toRadians(360.0).toFloat()
 
@@ -96,7 +101,7 @@ class CircleTunerView: View {
         centerTextPaint.color = textColor
         centerTextPaint.textAlign = Paint.Align.CENTER
 
-        indicatorPath.setFillType(Path.FillType.EVEN_ODD)
+        indicatorPath.fillType = Path.FillType.EVEN_ODD
 
         angleIntervalRadians = Math.toRadians(360 / notes.size.toDouble()).toFloat()
 
@@ -204,13 +209,18 @@ class CircleTunerView: View {
             canvas.drawText(position.name, position.x, position.y, textPaint)
         }
 
-        // Draw the indicator
-
-        // Draw the indicator
+        // Draw the target indicator
         indicatorPath.reset()
         indicatorPath.moveTo(indicatorPoint1.x, indicatorPoint1.y)
         indicatorPath.lineTo(indicatorPoint2.x, indicatorPoint2.y)
         indicatorPath.lineTo(indicatorPoint3.x, indicatorPoint3.y)
+        indicatorPath.close()
+        canvas.drawPath(indicatorPath, indicatorPaint)
+        // Draw the live indicator
+        indicatorPath.reset()
+        indicatorPath.moveTo(indicator2Point1.x, indicator2Point1.y)
+        indicatorPath.lineTo(indicator2Point2.x, indicator2Point2.y)
+        indicatorPath.lineTo(indicator2Point3.x, indicator2Point3.y)
         indicatorPath.close()
         canvas.drawPath(indicatorPath, indicatorPaint)
 
@@ -222,12 +232,13 @@ class CircleTunerView: View {
         // Draw the text on the inner circle
 
         // Draw the text on the inner circle
-
-        updateNote(note[0], frequency[0].toDouble(), 0f)
+        if (noteList.size > 0) {
+            updateNote(noteList[currentIndex], frequencyList[currentIndex].toDouble(), 0f)
+        }
         canvas.drawText(currentNoteName, centerX.toFloat(), centerTextY, centerTextPaint)
     }
 
-    fun updateNote(noteName: String?, frequency: Double, percentOffset: Float) {
+    fun updateNote(noteName: String?, targetFrequency: Double, percentOffset: Float) {
         var p = 0
         val l = notes.size
         for (i in 0 until l) {
@@ -245,30 +256,47 @@ class CircleTunerView: View {
             textBounds.offsetTo(0, 0)
             centerTextY = centerY + textBounds.exactCenterY()
             currentAngleRadians = angle
-            updateIndicatorAngle(angle)
+            updateIndicatorAngle(angle, indicatorPoint1, indicatorPoint2, indicatorPoint3)
         }
     }
 
     private fun normalizeAngle(angleRadians: Float): Float {
-        val normalizedAngle: Float = Math.abs(angleRadians) % RADIANS_360
+        val normalizedAngle: Float = abs(angleRadians) % RADIANS_360
         return if (angleRadians < 0) RADIANS_360 - normalizedAngle else normalizedAngle
     }
 
-    private fun updateIndicatorAngle(angleRadians: Float) {
+    private fun updateIndicatorAngle(angleRadians: Float, point1: PointF, point2: PointF, point3: PointF) {
         // Outer point
-        indicatorPoint1[centerX + indicatorRadius * Math.cos(angleRadians.toDouble()).toFloat()] =
-            centerY + indicatorRadius * Math.sin(angleRadians.toDouble()).toFloat()
+        point1[centerX + indicatorRadius * cos(angleRadians.toDouble()).toFloat()] =
+            centerY + indicatorRadius * sin(angleRadians.toDouble()).toFloat()
 
         // 90 degrees difference
         var bottomAngleRadians = normalizeAngle(angleRadians - RADIANS_90)
-        indicatorPoint2[centerX + indicatorBottomRadius * cos(bottomAngleRadians.toDouble()).toFloat()] =
+        point2[centerX + indicatorBottomRadius * cos(bottomAngleRadians.toDouble()).toFloat()] =
             centerY + indicatorBottomRadius * sin(bottomAngleRadians.toDouble()).toFloat()
 
         // 90 degrees difference
         bottomAngleRadians = normalizeAngle(angleRadians + RADIANS_90)
-        indicatorPoint3[centerX + indicatorBottomRadius * cos(bottomAngleRadians.toDouble()).toFloat()] =
-            centerY + indicatorBottomRadius * Math.sin(bottomAngleRadians.toDouble()).toFloat()
+        point3[centerX + indicatorBottomRadius * cos(bottomAngleRadians.toDouble()).toFloat()] =
+            centerY + indicatorBottomRadius * sin(bottomAngleRadians.toDouble()).toFloat()
         invalidate()
+    }
+
+    fun updateIndicator2Angle(view: TextView, targetFrequency: Double): Int {
+        val capturedFrequency = (view.tag as Float).toDouble()
+        val targetAngle = currentAngleRadians
+        return if (capturedFrequency >= targetFrequency / 2 && capturedFrequency <= targetFrequency * 2) {
+            val capturedCents = PitchConverter.hertzToAbsoluteCent(capturedFrequency)
+            val targetCents = PitchConverter.hertzToAbsoluteCent(targetFrequency)
+            val centsDiff = capturedCents - targetCents
+            val angleDiff = (centsDiff / 1200 * RADIANS_360).toFloat()
+            val angleResult = normalizeAngle(targetAngle + angleDiff)
+            updateIndicatorAngle(angleResult, indicator2Point1, indicator2Point2, indicator2Point3)
+            0
+        } else {
+            if (capturedFrequency < targetFrequency / 2) -1
+            else 1
+        }
     }
 
     class NotePosition internal constructor(val name: String, val x: Float, val y: Float)

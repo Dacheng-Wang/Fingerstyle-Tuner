@@ -6,12 +6,16 @@
     tools:context=".DisplayTuner">
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/capturedFrequency"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <com.example.fingerstyleguitartuner.ui.CircleTunerView
-        android:id="@+id/circleTunerView"
+    <include layout="@layout/fragment_circle_guitar_tuner"/>
+
+    <TextView
+        android:id="@+id/tuningWarning"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="@dimen/spacing_medium"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

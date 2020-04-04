@@ -21,6 +21,7 @@ import com.example.fingerstyleguitartuner.R
 import net.mabboud.android_tone_player.ContinuousBuzzer
 import net.mabboud.android_tone_player.OneTimeBuzzer
 import kotlin.concurrent.timer
+import kotlin.math.log
 import kotlin.math.pow
 
 
@@ -236,6 +237,7 @@ fun calculateFrequency(noteLetter: String, noteNumber: Int): Float{
     }
     return (baseFrequency * (step.pow(stepDiff)))
 }
+
 lateinit var buzzer: OneTimeBuzzer
 var isPlaying = false
 var previousView: View? = null
