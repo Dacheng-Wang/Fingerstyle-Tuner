@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fingerstyleguitartuner.ui.MyAdapter
 import com.example.fingerstyleguitartuner.ui.RecyclerItemClickListener
+import com.example.fingerstyleguitartuner.ui.buzzer
 import com.example.fingerstyleguitartuner.ui.calculateFrequency
 import kotlinx.android.synthetic.main.activity_main.*
 import net.mabboud.android_tone_player.OneTimeBuzzer
@@ -186,6 +187,10 @@ class MainActivity : AppCompatActivity() {
             })
         )
         fab.setOnClickListener {
+            if (::buzzer.isInitialized) {
+                buzzer.stop()
+                timer.cancel()
+            }
             val intent = Intent(this@MainActivity, AddTune::class.java)
             startActivityForResult(intent, LAUNCH_ADD_TUNE)
         }
@@ -270,7 +275,8 @@ class MainActivity : AppCompatActivity() {
         val inflater = menuInflater
         inflater.inflate(R.menu.menu_context, menu)
     }
-
+    lateinit var buzzer: OneTimeBuzzer
+    lateinit var timer: CountDownTimer
     override fun onContextItemSelected(item: MenuItem): Boolean
     {
         return when (item.itemId)
@@ -301,7 +307,11 @@ class MainActivity : AppCompatActivity() {
                 val interval = 1000L
                 val time = interval * frequencyLists[tuneIndex].count()
                 var count = 0
-                val timer = object: CountDownTimer(time, interval) {
+                if (::buzzer.isInitialized) {
+                    buzzer.stop()
+                    timer.cancel()
+                }
+                timer = object: CountDownTimer(time, interval) {
                     override fun onFinish() {
                     }
                     override fun onTick(millisUntilFinished: Long) {
@@ -340,8 +350,7 @@ class MainActivity : AppCompatActivity() {
                         else {
                             volume = 5
                         }
-
-                        val buzzer = OneTimeBuzzer()
+                        buzzer = OneTimeBuzzer()
                         buzzer.duration = interval / 1000.0
                         buzzer.volume = volume
                         buzzer.toneFreqInHz = frequency.toDouble()
