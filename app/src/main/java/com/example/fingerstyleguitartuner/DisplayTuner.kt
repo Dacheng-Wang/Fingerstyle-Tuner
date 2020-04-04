@@ -9,17 +9,14 @@ import be.tarsos.dsp.io.android.AudioDispatcherFactory
 import be.tarsos.dsp.pitch.PitchDetectionHandler
 import be.tarsos.dsp.pitch.PitchProcessor
 import be.tarsos.dsp.pitch.PitchProcessor.PitchEstimationAlgorithm
-import com.example.fingerstyleguitartuner.ui.fragment.CircleGuitarTunerFragment
-import com.example.fingerstyleguitartuner.ui.view.TunerPitchToggleView
 
+lateinit var note: ArrayList<String>
+lateinit var frequency: FloatArray
 
-class DisplayTuner : AppCompatActivity(), TunerPitchToggleView {
-    private lateinit var circleGuitarTunerFragment: CircleGuitarTunerFragment
-    private lateinit var note: ArrayList<String>
-    private lateinit var frequency: FloatArray
+class DisplayTuner : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_display_tuner)
 
         val dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050, 1024, 0)
 
@@ -31,24 +28,12 @@ class DisplayTuner : AppCompatActivity(), TunerPitchToggleView {
             }
         }
 
-        note = intent.getStringArrayListExtra("note")
-        frequency = intent.getFloatArrayExtra("frequency")
-        circleGuitarTunerFragment = CircleGuitarTunerFragment.newInstance().apply {
-            arguments = Bundle().apply {
-                putStringArrayList("notes", note)
-                putFloatArray("frequency", frequency)
-            }
-        }
+        note = intent.getStringArrayListExtra("note") as ArrayList<String>
+        frequency = intent.getFloatArrayExtra("frequency") as FloatArray
+        setContentView(R.layout.activity_display_tuner)
+
         val p: AudioProcessor = PitchProcessor(PitchEstimationAlgorithm.FFT_YIN, 22050F, 1024, pdh)
         dispatcher.addAudioProcessor(p)
-        showGuitarTuner()
         Thread(dispatcher, "Audio Dispatcher").start()
-    }
-
-    override fun showGuitarTuner() {
-        supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, circleGuitarTunerFragment).commit()
-    }
-
-    override fun showPitchPlayback(note: String?, frequency: Double, x: Float, y: Float, animate: Boolean) {
     }
 }

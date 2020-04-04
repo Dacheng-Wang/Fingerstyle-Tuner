@@ -39,7 +39,6 @@ android {
 }
 
 dependencies {
-    implementation 'com.github.nisrulz:zentone:1.0.3'
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.1.0'
@@ -50,11 +49,6 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui-ktx:2.2.1'
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation 'androidx.gridlayout:gridlayout:1.0.0'
-    implementation 'com.jakewharton:butterknife:10.2.1'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.1'
+    implementation 'net.mabboud:android-tone-player:0.2'
     // Dagger - Dependency Injection
-    annotationProcessor 'com.google.dagger:dagger-compiler:2.12'
-    implementation 'com.google.dagger:dagger:2.12'
 }

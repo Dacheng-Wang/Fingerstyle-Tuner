@@ -1,13 +1,12 @@
 package com.example.fingerstyleguitartuner
 
-import `in`.excogitation.zentone.library.ToneStoppedListener
-import `in`.excogitation.zentone.library.ZenTone
 import android.Manifest
 import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.view.ContextMenu
 import android.view.ContextMenu.ContextMenuInfo
 import android.view.Menu
@@ -23,6 +22,7 @@ import com.example.fingerstyleguitartuner.ui.MyAdapter
 import com.example.fingerstyleguitartuner.ui.RecyclerItemClickListener
 import com.example.fingerstyleguitartuner.ui.calculateFrequency
 import kotlinx.android.synthetic.main.activity_main.*
+import net.mabboud.android_tone_player.OneTimeBuzzer
 import java.util.concurrent.TimeUnit
 
 
@@ -298,20 +298,58 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.play ->
             {
-                for (frequency in frequencyLists[tuneIndex]) {
-                    var gain = 0F
-                    if (frequency < 100) gain = 1F
-                    else if (frequency < 150) gain = 0.6F
-                    else if (frequency < 200) gain = 0.5F
-                    else if (frequency < 250) gain = 0.4F
-                    else if (frequency < 300) gain = 0.3F
-                    else if (frequency < 360) gain = 0.2F
-                    else if (frequency < 400) gain = 0.1F
-                    else gain = 0.05F
-                    ZenTone.getInstance().generate(frequency.toInt(), 1, gain) {}
-                    ZenTone.getInstance().stop()
-                    TimeUnit.SECONDS.sleep(1)
+                val interval = 1000L
+                val time = interval * frequencyLists[tuneIndex].count()
+                var count = 0
+                val timer = object: CountDownTimer(time, interval) {
+                    override fun onFinish() {
+                    }
+                    override fun onTick(millisUntilFinished: Long) {
+                        var volume: Int
+                        val frequency = frequencyLists[tuneIndex][count]
+                        if (frequency < 100) {
+                            volume = 150
+                        }
+                        else if (frequency < 150) {
+                            volume = 90
+                        }
+                        else if (frequency < 200) {
+                            volume = 80
+                        }
+                        else if (frequency < 250) {
+                            volume = 70
+                        }
+                        else if (frequency < 300) {
+                            volume = 60
+                        }
+                        else if (frequency < 350) {
+                            volume = 50
+                        }
+                        else if (frequency < 400) {
+                            volume = 40
+                        }
+                        else if (frequency < 450) {
+                            volume = 30
+                        }
+                        else if (frequency < 500) {
+                            volume = 20
+                        }
+                        else if (frequency < 550) {
+                            volume = 10
+                        }
+                        else {
+                            volume = 5
+                        }
+
+                        val buzzer = OneTimeBuzzer()
+                        buzzer.duration = interval / 1000.0
+                        buzzer.volume = volume
+                        buzzer.toneFreqInHz = frequency.toDouble()
+                        buzzer.play()
+                        count += 1
+                    }
                 }
+                timer.start()
                 return true
             }
 

@@ -104,9 +104,21 @@ class AddTune : AppCompatActivity() {
             sharpList.clear()
             for (i in 0 until addingTuneView.childCount) {
                 frequencyList[i] = addingTuneView.findViewHolderForAdapterPosition(i)?.itemView?.tune_frequency?.tag as Float
-                letterList.add(addingTuneView.findViewHolderForAdapterPosition(i)?.itemView?.tune_letter?.selectedItem.toString())
-                numberList.add(addingTuneView.findViewHolderForAdapterPosition(i)?.itemView?.tune_number?.selectedItem.toString().toInt())
-                sharpList.add(if (addingTuneView.findViewHolderForAdapterPosition(i)?.itemView?.tune_sharp_checkBox?.isChecked!!) 1 else 0)
+                var letter = addingTuneView.findViewHolderForAdapterPosition(i)?.itemView?.tune_letter?.selectedItem.toString()
+                val number = addingTuneView.findViewHolderForAdapterPosition(i)?.itemView?.tune_number?.selectedItem.toString().toInt()
+                var sharp = if (addingTuneView.findViewHolderForAdapterPosition(i)?.itemView?.tune_sharp_checkBox?.isChecked!!) 1 else 0
+                //Check for non-existing input - B# and E#
+                if (letter == "B" && sharp == 1) {
+                    letter = "C"
+                    sharp = 0
+                }
+                else if (letter == "E" && sharp == 1) {
+                    letter = "F"
+                    sharp = 0
+                }
+                letterList.add(letter)
+                numberList.add(number)
+                sharpList.add(sharp)
             }
             // add note to the name and pass to main activity
             val name = tune_name.text.toString()

@@ -1,8 +1,8 @@
 package com.example.fingerstyleguitartuner.ui
 
-import `in`.excogitation.zentone.library.ToneStoppedListener
-import `in`.excogitation.zentone.library.ZenTone
 import android.content.Context
+import android.media.Image
+import android.os.CountDownTimer
 import android.view.*
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.widget.*
@@ -18,6 +18,9 @@ import be.tarsos.dsp.synthesis.AmplitudeLFO
 import be.tarsos.dsp.synthesis.NoiseGenerator
 import be.tarsos.dsp.synthesis.SineGenerator
 import com.example.fingerstyleguitartuner.R
+import net.mabboud.android_tone_player.ContinuousBuzzer
+import net.mabboud.android_tone_player.OneTimeBuzzer
+import kotlin.concurrent.timer
 import kotlin.math.pow
 
 
@@ -38,6 +41,7 @@ class AddingTuneAdapter(private val tuneList: ArrayList<String>, private val let
     private lateinit var spinnerNumber: Spinner
     private lateinit var tunePlay: ImageButton
     private lateinit var viewGroup: ViewGroup
+    private lateinit var timer: CountDownTimer
     // Create new views (invoked by the layout manager)
     override fun onCreateViewHolder(parent: ViewGroup,
                                     viewType: Int): AddingTuneViewHolder {
@@ -109,9 +113,23 @@ class AddingTuneAdapter(private val tuneList: ArrayList<String>, private val let
             refreshFrequency(parent.context)
         }
         tunePlay = view.findViewById<ImageButton>(R.id.tune_play)
+
         tunePlay.setOnClickListener {
             refreshSelected(parent.context, it, true)
-            produceSoundFromFrequency(frequencyTextView.tag as Float, 1)
+            produceSoundFromFrequency(it as View, frequencyTextView.tag as Float, 5)
+            if (::timer.isInitialized) timer.cancel()
+            timer = object: CountDownTimer(5000, 5000) {
+                override fun onFinish() {
+                    if (isPlaying) {
+                        buzzer.stop()
+                        isPlaying = false
+                        (it as ImageButton).setImageResource(R.drawable.ic_play_arrow_orange_24dp)
+                    }
+                }
+                override fun onTick(millisUntilFinished: Long) {
+                }
+            }
+            timer.start()
         }
 
         // set the view's size, margins, paddings and layout parameters
@@ -147,7 +165,7 @@ class AddingTuneAdapter(private val tuneList: ArrayList<String>, private val let
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
         holder.textView.text = tuneList[position]
-        if (letterList != null && numberList != null && sharpList != null) {
+        if (letterList != null && numberList != null && sharpList != null && letterList.size > position) {
             holder.view.findViewById<Spinner>(R.id.tune_letter).setSelection(viewGroup.resources.getStringArray(R.array.tuneLetterList).indexOf(letterList[position]))
             holder.view.findViewById<Spinner>(R.id.tune_number).setSelection(viewGroup.resources.getStringArray(R.array.tuneNumberList).indexOf(numberList[position].toString()))
             holder.view.findViewById<CheckBox>(R.id.tune_sharp_checkBox).isChecked = sharpList[position] == 1
@@ -155,7 +173,6 @@ class AddingTuneAdapter(private val tuneList: ArrayList<String>, private val let
     }
     override fun getItemCount() = tuneList.size
 }
-
 
 class AddingTuneItemClickListener(
     context: Context?,
@@ -219,39 +236,77 @@ fun calculateFrequency(noteLetter: String, noteNumber: Int): Float{
     }
     return (baseFrequency * (step.pow(stepDiff)))
 }
+lateinit var buzzer: OneTimeBuzzer
+var isPlaying = false
+var previousView: View? = null
+var firstTime = true
+fun produceSoundFromFrequency(view: View, frequency: Float, seconds: Int) {
+    var volume: Int
+    if (frequency < 100) {
+        volume = 150
+    }
+    else if (frequency < 150) {
+        volume = 90
+    }
+    else if (frequency < 200) {
+        volume = 80
+    }
+    else if (frequency < 250) {
+        volume = 70
+    }
+    else if (frequency < 300) {
+        volume = 60
+    }
+    else if (frequency < 350) {
+        volume = 50
+    }
+    else if (frequency < 400) {
+        volume = 40
+    }
+    else if (frequency < 450) {
+        volume = 30
+    }
+    else if (frequency < 500) {
+        volume = 20
+    }
+    else if (frequency < 550) {
+        volume = 10
+    }
+    else {
+        volume = 5
+    }
 
-fun produceSoundFromFrequency(frequency: Float, seconds: Int) {
-    /*val generator = AudioGenerator(1024, 0)
-    var gain = 0.0
-    if (frequency < 100) gain = 0.0
-    else if (frequency < 150) gain = 0.6
-    else if (frequency < 200) gain = 0.5
-    else if (frequency < 250) gain = 0.4
-    else if (frequency < 300) gain = 0.3
-    else if (frequency < 360) gain = 0.2
-    else if (frequency < 400) gain = 0.1
-    else gain = 0.05
-    generator.addAudioProcessor(SineGenerator(gain, frequency.toDouble()))
-    generator.addAudioProcessor(LowPassFS(frequency, 44100F))
-    val format = TarsosDSPAudioFormat(44100F, 16, 1, true, false)
-    generator.addAudioProcessor(AndroidAudioPlayer(format))*/
-    /*val t = Thread(generator)
-    t.start()
-    try {
-        Thread.sleep(seconds * 1000)
+    if (previousView == view || firstTime) {
+        if (!isPlaying) {
+            buzzer = OneTimeBuzzer()
+            buzzer.duration = seconds.toDouble()
+            buzzer.volume = volume
+            buzzer.toneFreqInHz = frequency.toDouble()
+            buzzer.play()
+            isPlaying = true
+            (view as ImageButton).setImageResource(R.drawable.ic_pause_orange_24dp)
+            firstTime = false
+        }
+        else {
+            buzzer.stop()
+            isPlaying = false
+            (view as ImageButton).setImageResource(R.drawable.ic_play_arrow_orange_24dp)
+        }
+        previousView = view
     }
-    catch (e: InterruptedException) {
-        e.printStackTrace()
+    else {
+        if (previousView != null) (previousView as ImageButton).setImageResource(R.drawable.ic_play_arrow_orange_24dp)
+        previousView = view
+        isPlaying = false
+
+        buzzer.stop()
+        buzzer = OneTimeBuzzer()
+        buzzer.duration = seconds.toDouble()
+        buzzer.volume = volume
+        buzzer.toneFreqInHz = frequency.toDouble()
+        buzzer.play()
+        isPlaying = true
+        (view as ImageButton).setImageResource(R.drawable.ic_pause_orange_24dp)
     }
-    generator.stop()*/
-    var gain = 0F
-    if (frequency < 100) gain = 1F
-    else if (frequency < 150) gain = 0.6F
-    else if (frequency < 200) gain = 0.5F
-    else if (frequency < 250) gain = 0.4F
-    else if (frequency < 300) gain = 0.3F
-    else if (frequency < 360) gain = 0.2F
-    else if (frequency < 400) gain = 0.1F
-    else gain = 0.05F
-    ZenTone.getInstance().generate(frequency.toInt(), seconds, gain) {  }
+
 }

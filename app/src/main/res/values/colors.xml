@@ -4,35 +4,18 @@
     <color name="colorPrimaryDark">#43B02A</color>
     <color name="colorAccent">#ED8B00</color>
 
-    <color name="primary_light_color">#37474F</color>
-    <color name="primary_medium_color">#B0BEC5</color>
-    <color name="primary_color">#263238</color>
-    <color name="primary_dark_color">#212121</color>
-    <color name="primary_accent_color">#85D52C</color>
-    <color name="secondary_accent_color">#FF9800</color>
-    <color name="primary_text_color">@color/white</color>
-    <color name="secondary_text_color">@color/primary_dark_color</color>
+    <color name="black">#212121</color>
     <color name="attention">#FF5722</color>
-
     <color name="white">#FFFFFF</color>
+    <color name="white_75_percent_transparency">#BFFFFFFF</color>
     <color name="white_50_percent_transparency">#80FFFFFF</color>
     <color name="white_25_percent_transparency">#40FFFFFF</color>
     <color name="white_10_percent_transparency">#1AFFFFFF</color>
 
-    <color name="circle_tuner_view_default_indicator_color">#FBFAFA</color>
-    <color name="circle_tuner_view_default_outer_circle_color">@color/secondary_accent_color</color>
-    <color name="circle_tuner_view_default_inner_circle_color">@color/primary_medium_color</color>
-    <color name="circle_tuner_view_default_text_color">@color/primary_text_color</color>
-    <color name="circle_tuner_view_default_in_tune_color">@color/primary_accent_color</color>
+    <color name="circle_tuner_view_default_indicator_color">@color/white_75_percent_transparency</color>
+    <color name="circle_tuner_view_default_outer_circle_color">@color/colorAccent</color>
+    <color name="circle_tuner_view_default_inner_circle_color">#007CB0</color>
+    <color name="circle_tuner_view_default_text_color">@color/white</color>
+    <color name="circle_tuner_view_default_in_tune_color">@color/colorPrimaryDark</color>
     <color name="circle_tuner_view_default_out_of_tune_color">@color/attention</color>
-
-    <color name="volume_on">@color/primary_accent_color</color>
-    <color name="volume_muted">@color/attention</color>
-
-    <color name="permission_microphone_color">@color/secondary_accent_color</color>
-    <color name="permission_circle_color">@color/white_25_percent_transparency</color>
-
-    <color name="snack_bar_action_color">@color/primary_accent_color</color>
-
-    <color name="divider_color">@color/white_10_percent_transparency</color>
 </resources>
