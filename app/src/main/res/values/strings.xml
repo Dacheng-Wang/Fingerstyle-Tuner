@@ -14,8 +14,8 @@
     <string name="rounding">%.2f</string>
     <string name="frequency">%1$s Hz</string>
     <string name="string_number">String #%1$s</string>
-    <string name="octave_too_high">Captured pitch is at least two octaves above target pitch. Are you sure you are tuning the right string?</string>
-    <string name="octave_too_low">Captured pitch is at least two octaves below target pitch. Are you sure you are tuning the right string?</string>
+    <string name="octave_too_high">Captured pitch is too high!</string>
+    <string name="octave_too_low">Captured pitch is too low!</string>
     //List of tune letters
     <string-array name="tuneLetterList">
         <item>C</item>
@@ -48,7 +48,4 @@
         <item>A#</item>
         <item>B</item>
     </string-array>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

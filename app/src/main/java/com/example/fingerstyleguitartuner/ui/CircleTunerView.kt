@@ -9,9 +9,13 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import be.tarsos.dsp.util.PitchConverter
-import com.example.fingerstyleguitartuner.*
+import com.example.fingerstyleguitartuner.R
+import com.example.fingerstyleguitartuner.fragment.currentPage
+import com.example.fingerstyleguitartuner.frequencyList
+import com.example.fingerstyleguitartuner.noteList
 import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.roundToInt
 import kotlin.math.sin
 
 class CircleTunerView: View {
@@ -41,30 +45,33 @@ class CircleTunerView: View {
     private val notePositions = ArrayList<NotePosition>()
     private val notes = resources.getStringArray(R.array.circle_tuner_view_notes)
     private var angleIntervalRadians = 0f
-    private var currentNoteName = ""
-    private var currentIndex = 0
-    private val RADIANS_90 = Math.toRadians(90.0).toFloat()
-    private val RADIANS_360 = Math.toRadians(360.0).toFloat()
+    private var targetNoteName = if (noteList.size > 0) noteList[currentPage] else ""
+    private val radian90 = Math.toRadians(90.0).toFloat()
+    private val radian360 = Math.toRadians(360.0).toFloat()
 
-    var indicatorColor = ContextCompat.getColor(context, R.color.circle_tuner_view_default_indicator_color)
+    private var indicatorColor = ContextCompat.getColor(context, R.color.circle_tuner_view_default_indicator_color)
 
-    var outerCircleColor = ContextCompat.getColor(context, R.color.circle_tuner_view_default_outer_circle_color)
+    private var indicator2Color = ContextCompat.getColor(context, R.color.circle_tuner_view_default_indicator2_color)
 
-    var stateInTuneCircleColor = ContextCompat.getColor(context, R.color.circle_tuner_view_default_in_tune_color)
+    private var outerCircleColor = ContextCompat.getColor(context, R.color.circle_tuner_view_default_outer_circle_color)
 
-    var stateOutOfTuneCircleColor = ContextCompat.getColor(context, R.color.circle_tuner_view_default_out_of_tune_color)
+    private var stateInTuneCircleColor = ContextCompat.getColor(context, R.color.circle_tuner_view_default_in_tune_color)
 
-    var innerCircleColor = ContextCompat.getColor(context, R.color.circle_tuner_view_default_inner_circle_color)
+    private var stateOutOfTuneCircleColor = ContextCompat.getColor(context, R.color.circle_tuner_view_default_out_of_tune_color)
 
-    var textColor = ContextCompat.getColor(context, R.color.circle_tuner_view_default_text_color)
+    private var innerCircleColor = ContextCompat.getColor(context, R.color.circle_tuner_view_default_inner_circle_color)
 
-    var shadowColor = ContextCompat.getColor(context, R.color.black)
+    private var textColor = ContextCompat.getColor(context, R.color.circle_tuner_view_default_text_color)
 
-    var shadowX = resources.getDimension(R.dimen.circle_tuner_view_default_shadow_x)
+    private var shadowColor = ContextCompat.getColor(context, R.color.black)
 
-    var shadowY = resources.getDimension(R.dimen.circle_tuner_view_default_shadow_y)
+    private var shadowX = resources.getDimension(R.dimen.circle_tuner_view_default_shadow_x)
 
-    var shadowRadius = resources.getDimension(R.dimen.circle_tuner_view_default_radius)
+    private var shadowY = resources.getDimension(R.dimen.circle_tuner_view_default_shadow_y)
+
+    private var shadowRadius = resources.getDimension(R.dimen.circle_tuner_view_default_radius)
+
+    private var isInitialized = false
 
     constructor(context: Context) : super(context) {
 
@@ -76,8 +83,9 @@ class CircleTunerView: View {
 
         try {
             indicatorColor = a.getColor(R.styleable.CircleTunerView_indicatorColor, indicatorColor)
+            indicator2Color = a.getColor(R.styleable.CircleTunerView_indicatorColor, indicator2Color)
             outerCircleColor = a.getColor(R.styleable.CircleTunerView_outerCircleColor, outerCircleColor)
-            innerCircleColor = a.getColor(R.styleable.CircleTunerView_indicatorColor, innerCircleColor)
+            innerCircleColor = a.getColor(R.styleable.CircleTunerView_innerCircleColor, innerCircleColor)
             textColor = a.getColor(R.styleable.CircleTunerView_textColor, textColor)
             stateInTuneCircleColor = a.getColor(R.styleable.CircleTunerView_inTuneColor, stateInTuneCircleColor)
             stateOutOfTuneCircleColor = a.getColor(R.styleable.CircleTunerView_outOfTuneColor, stateOutOfTuneCircleColor)
@@ -194,7 +202,10 @@ class CircleTunerView: View {
             notePositions.add(NotePosition(name, textX, textY + textBounds.exactCenterY()))
         }
     }
-
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        setMeasuredDimension(widthMeasureSpec, heightMeasureSpec)
+    }
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         // Draw the outer circle
@@ -215,6 +226,7 @@ class CircleTunerView: View {
         indicatorPath.lineTo(indicatorPoint2.x, indicatorPoint2.y)
         indicatorPath.lineTo(indicatorPoint3.x, indicatorPoint3.y)
         indicatorPath.close()
+        indicatorPaint.color = indicatorColor
         canvas.drawPath(indicatorPath, indicatorPaint)
         // Draw the live indicator
         indicatorPath.reset()
@@ -222,6 +234,7 @@ class CircleTunerView: View {
         indicatorPath.lineTo(indicator2Point2.x, indicator2Point2.y)
         indicatorPath.lineTo(indicator2Point3.x, indicator2Point3.y)
         indicatorPath.close()
+        indicatorPaint.color = indicator2Color
         canvas.drawPath(indicatorPath, indicatorPaint)
 
         // Draw the inner circle
@@ -231,38 +244,32 @@ class CircleTunerView: View {
 
         // Draw the text on the inner circle
 
-        // Draw the text on the inner circle
-        if (noteList.size > 0) {
-            updateNote(noteList[currentIndex], frequencyList[currentIndex].toDouble(), 0f)
-        }
-        canvas.drawText(currentNoteName, centerX.toFloat(), centerTextY, centerTextPaint)
-    }
-
-    fun updateNote(noteName: String?, targetFrequency: Double, percentOffset: Float) {
-        var p = 0
-        val l = notes.size
-        for (i in 0 until l) {
-            if (notes[i] == noteName) {
-                p = i
-                break
+        // Draw the text and indicator on the inner circle - this only need to be done once per fragment
+        if (noteList.size > 0 && !isInitialized) {
+            var p = 0
+            val l = notes.size
+            for (i in 0 until l) {
+                if (notes[i] == targetNoteName) {
+                    p = i
+                    break
+                }
             }
-        }
-        val angle: Float = normalizeAngle(angleIntervalRadians * p + angleIntervalRadians * (percentOffset / 100))
-        if (currentNoteName != noteName) {
-            currentNoteName = noteName ?: ""
+            val angle: Float = normalizeAngle(angleIntervalRadians * p)
             // Unfortunately we have to recalculate the height of the text to properly align it in the center.
             // This can be rather slow
-            centerTextPaint.getTextBounds(currentNoteName, 0, currentNoteName.length, textBounds)
+            centerTextPaint.getTextBounds(targetNoteName, 0, targetNoteName.length, textBounds)
             textBounds.offsetTo(0, 0)
             centerTextY = centerY + textBounds.exactCenterY()
             currentAngleRadians = angle
             updateIndicatorAngle(angle, indicatorPoint1, indicatorPoint2, indicatorPoint3)
+            isInitialized = true
         }
+        canvas.drawText(targetNoteName, centerX.toFloat(), centerTextY, centerTextPaint)
     }
 
     private fun normalizeAngle(angleRadians: Float): Float {
-        val normalizedAngle: Float = abs(angleRadians) % RADIANS_360
-        return if (angleRadians < 0) RADIANS_360 - normalizedAngle else normalizedAngle
+        val normalizedAngle: Float = abs(angleRadians) % radian360
+        return if (angleRadians < 0) radian360 - normalizedAngle else normalizedAngle
     }
 
     private fun updateIndicatorAngle(angleRadians: Float, point1: PointF, point2: PointF, point3: PointF) {
@@ -271,12 +278,12 @@ class CircleTunerView: View {
             centerY + indicatorRadius * sin(angleRadians.toDouble()).toFloat()
 
         // 90 degrees difference
-        var bottomAngleRadians = normalizeAngle(angleRadians - RADIANS_90)
+        var bottomAngleRadians = normalizeAngle(angleRadians - radian90)
         point2[centerX + indicatorBottomRadius * cos(bottomAngleRadians.toDouble()).toFloat()] =
             centerY + indicatorBottomRadius * sin(bottomAngleRadians.toDouble()).toFloat()
 
         // 90 degrees difference
-        bottomAngleRadians = normalizeAngle(angleRadians + RADIANS_90)
+        bottomAngleRadians = normalizeAngle(angleRadians + radian90)
         point3[centerX + indicatorBottomRadius * cos(bottomAngleRadians.toDouble()).toFloat()] =
             centerY + indicatorBottomRadius * sin(bottomAngleRadians.toDouble()).toFloat()
         invalidate()
@@ -289,8 +296,9 @@ class CircleTunerView: View {
             val capturedCents = PitchConverter.hertzToAbsoluteCent(capturedFrequency)
             val targetCents = PitchConverter.hertzToAbsoluteCent(targetFrequency)
             val centsDiff = capturedCents - targetCents
-            val angleDiff = (centsDiff / 1200 * RADIANS_360).toFloat()
+            val angleDiff = (centsDiff / 1200 * radian360).toFloat()
             val angleResult = normalizeAngle(targetAngle + angleDiff)
+
             updateIndicatorAngle(angleResult, indicator2Point1, indicator2Point2, indicator2Point3)
             0
         } else {
@@ -298,6 +306,16 @@ class CircleTunerView: View {
             else 1
         }
     }
+
+    fun outOfTuneChangeColor() {
+        innerCirclePaint.color = ContextCompat.getColor(context, R.color.attention)
+        invalidate()
+    }
+    fun inTuneChangeColor() {
+        innerCirclePaint.color = innerCircleColor
+        invalidate()
+    }
+
 
     class NotePosition internal constructor(val name: String, val x: Float, val y: Float)
 }

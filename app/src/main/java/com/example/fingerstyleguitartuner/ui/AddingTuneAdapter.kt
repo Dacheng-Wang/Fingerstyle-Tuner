@@ -1,27 +1,15 @@
 package com.example.fingerstyleguitartuner.ui
 
 import android.content.Context
-import android.media.Image
 import android.os.CountDownTimer
 import android.view.*
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.widget.*
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
-import be.tarsos.dsp.AudioGenerator
-import be.tarsos.dsp.effects.DelayEffect
-import be.tarsos.dsp.effects.FlangerEffect
-import be.tarsos.dsp.filters.LowPassFS
-import be.tarsos.dsp.io.TarsosDSPAudioFormat
-import be.tarsos.dsp.io.android.AndroidAudioPlayer
-import be.tarsos.dsp.synthesis.AmplitudeLFO
-import be.tarsos.dsp.synthesis.NoiseGenerator
-import be.tarsos.dsp.synthesis.SineGenerator
 import com.example.fingerstyleguitartuner.R
-import net.mabboud.android_tone_player.ContinuousBuzzer
 import net.mabboud.android_tone_player.OneTimeBuzzer
-import kotlin.concurrent.timer
-import kotlin.math.log
 import kotlin.math.pow
 
 
@@ -172,6 +160,7 @@ class AddingTuneAdapter(private val tuneList: ArrayList<String>, private val let
             holder.view.findViewById<CheckBox>(R.id.tune_sharp_checkBox).isChecked = sharpList[position] == 1
         }
     }
+
     override fun getItemCount() = tuneList.size
 }
 

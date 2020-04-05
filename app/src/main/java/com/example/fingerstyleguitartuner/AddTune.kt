@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -16,13 +17,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fingerstyleguitartuner.ui.AddingTuneAdapter
 import kotlinx.android.synthetic.main.activity_add_tune.*
 import kotlinx.android.synthetic.main.content_adding_tune.*
-import kotlinx.android.synthetic.main.recyclerview_tuning_items.*
 import kotlinx.android.synthetic.main.recyclerview_tuning_items.view.*
 
 
 class AddTune : AppCompatActivity() {
     //List of tunings
-    private val tuneList = ArrayList<String>()
+    private val stringList = ArrayList<String>()
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var recyclerViewAdapter: RecyclerView.Adapter<*>
@@ -37,6 +37,8 @@ class AddTune : AppCompatActivity() {
     private var numberList = ArrayList<Int>()
     private var sharpList = ArrayList<Int>()
     private var isEdit = false
+    private lateinit var mRunnable: Runnable
+    private val mHandler = Handler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,13 +62,12 @@ class AddTune : AppCompatActivity() {
         rotateForward = AnimationUtils.loadAnimation(applicationContext, R.anim.rotate_forward)
         rotateBackward = AnimationUtils.loadAnimation(applicationContext, R.anim.rotate_backward)
 
-        tuneList.add(baseContext.getString(R.string.string_number, stringCount.toString()) + "(Thickest String)")
+        stringList.add(baseContext.getString(R.string.string_number, stringCount.toString()) + "(Thickest String)")
         recyclerViewLayoutManager = LinearLayoutManager(this)
-        if (letterList.size>0) {
-            recyclerViewAdapter = AddingTuneAdapter(tuneList, letterList, numberList, sharpList)
-        }
-        else {
-            recyclerViewAdapter = AddingTuneAdapter(tuneList)
+        recyclerViewAdapter = if (letterList.size > 0) {
+            AddingTuneAdapter(stringList, letterList, numberList, sharpList)
+        } else {
+            AddingTuneAdapter(stringList)
         }
         recyclerView = findViewById<RecyclerView>(R.id.addingTuneView).apply {
             layoutManager = recyclerViewLayoutManager
@@ -76,7 +77,7 @@ class AddTune : AppCompatActivity() {
         //initializing recyclerview based on array list
         for (i in 0 until letterList.size - 1) {
             stringCount += 1
-            tuneList.add(baseContext.getString(R.string.string_number, stringCount.toString()))
+            stringList.add(baseContext.getString(R.string.string_number, stringCount.toString()))
             recyclerViewAdapter.notifyItemInserted(stringCount - 1)
         }
 
@@ -85,24 +86,25 @@ class AddTune : AppCompatActivity() {
         }
         fabAdd.setOnClickListener {
             stringCount += 1
-            tuneList.add(baseContext.getString(R.string.string_number, stringCount.toString()))
+            stringList.add(baseContext.getString(R.string.string_number, stringCount.toString()))
             recyclerViewAdapter.notifyItemInserted(stringCount - 1)
         }
         fabDelete.setOnClickListener {
             if (stringCount > 1) {
                 stringCount -= 1
-                tuneList.removeAt(stringCount)
+                stringList.removeAt(stringCount)
                 recyclerViewAdapter.notifyItemRemoved(stringCount)
             }
         }
         fabSave.setOnClickListener {
             val returnIntent = Intent()
             //Store all related data in separate array / array list
-            val frequencyList = FloatArray(addingTuneView.childCount)
+            val frequencyList = FloatArray(addingTuneView.adapter!!.itemCount)
             letterList.clear()
             numberList.clear()
             sharpList.clear()
-            for (i in 0 until addingTuneView.childCount) {
+            for (i in 0 until addingTuneView.adapter!!.itemCount) {
+                setActiveUserPosition(i)
                 frequencyList[i] = addingTuneView.findViewHolderForAdapterPosition(i)?.itemView?.tune_frequency?.tag as Float
                 var letter = addingTuneView.findViewHolderForAdapterPosition(i)?.itemView?.tune_letter?.selectedItem.toString()
                 val number = addingTuneView.findViewHolderForAdapterPosition(i)?.itemView?.tune_number?.selectedItem.toString().toInt()
@@ -140,6 +142,14 @@ class AddTune : AppCompatActivity() {
             if (!hasFocus){
                 hideKeyboard(v)
             }
+        }
+    }
+
+    private fun setActiveUserPosition(position: Int) {
+        val lastVisible = (recyclerViewLayoutManager as LinearLayoutManager).findLastVisibleItemPosition()
+        val firstVisible = (recyclerViewLayoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+        if (lastVisible < position || firstVisible > position) {
+            addingTuneView.scrollToPosition(position)
         }
     }
 

@@ -7,12 +7,11 @@
     <color name="black">#212121</color>
     <color name="attention">#FF5722</color>
     <color name="white">#FFFFFF</color>
-    <color name="white_75_percent_transparency">#BFFFFFFF</color>
-    <color name="white_50_percent_transparency">#80FFFFFF</color>
-    <color name="white_25_percent_transparency">#40FFFFFF</color>
-    <color name="white_10_percent_transparency">#1AFFFFFF</color>
+    <color name="gray_75_percent_transparency">#BFA7A8AA</color>
+    <color name="green_75_percent_transparency">#BF86BC25</color>
 
-    <color name="circle_tuner_view_default_indicator_color">@color/white_75_percent_transparency</color>
+    <color name="circle_tuner_view_default_indicator_color">@color/green_75_percent_transparency</color>
+    <color name="circle_tuner_view_default_indicator2_color">@color/gray_75_percent_transparency</color>
     <color name="circle_tuner_view_default_outer_circle_color">@color/colorAccent</color>
     <color name="circle_tuner_view_default_inner_circle_color">#007CB0</color>
     <color name="circle_tuner_view_default_text_color">@color/white</color>

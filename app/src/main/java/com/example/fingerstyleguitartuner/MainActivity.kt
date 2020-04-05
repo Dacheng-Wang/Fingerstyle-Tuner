@@ -176,6 +176,7 @@ class MainActivity : AppCompatActivity() {
                         val noteList = combineLetterAndSharp(letterLists[position], sharpLists[position])
                         intent.putExtra("note", noteList)
                         intent.putExtra("frequency", frequencyLists[position])
+                        intent.putExtra("name", nameLists[position])
                         startActivity(intent)
                     }
                 }

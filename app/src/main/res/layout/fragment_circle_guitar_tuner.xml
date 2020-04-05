@@ -5,9 +5,31 @@
     android:layout_height="match_parent"
     tools:context=".fragment.CircleGuitarTunerFragment">
 
-    <com.example.fingerstyleguitartuner.ui.CircleTunerView
-        android:id="@+id/circleTunerView"
+    <TextView
+        android:id="@+id/capturedFrequency"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
+    <TextView
+        android:id="@+id/string_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_high"
+        android:textSize="@dimen/text_size_medium"
+        android:gravity="center"
+        android:textColor="@color/colorPrimary"/>
+
+    <com.example.fingerstyleguitartuner.ui.CircleTunerView
+        android:id="@+id/circleTunerView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_small"/>
+
+    <TextView
+        android:id="@+id/tuningWarning"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:textColor="@color/attention"
+        android:layout_marginBottom="@dimen/spacing_medium"/>
 </FrameLayout>
