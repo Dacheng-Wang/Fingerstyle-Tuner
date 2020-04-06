@@ -4,41 +4,32 @@ import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.fingerstyleguitartuner.ui.AddingTuneAdapter
+import com.example.fingerstyleguitartuner.ui.AddingTuneListAdapter
+import com.example.fingerstyleguitartuner.ui.calculateFrequency
 import kotlinx.android.synthetic.main.activity_add_tune.*
-import kotlinx.android.synthetic.main.content_adding_tune.*
-import kotlinx.android.synthetic.main.recyclerview_tuning_items.view.*
 
-
-class AddTune : AppCompatActivity() {
-    //List of tunings
-    private val stringList = ArrayList<String>()
-
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var recyclerViewAdapter: RecyclerView.Adapter<*>
-    private lateinit var recyclerViewLayoutManager: RecyclerView.LayoutManager
+class AddingTune: AppCompatActivity() {
+    private lateinit var dataList: ArrayList<Array<Any>>
     private var stringCount: Int = 1
+    private lateinit var listView: ListView
     private var isFabOpen = false
     private var fabOpen: Animation? = null
-    private var fabClose:Animation? = null
-    private var rotateForward:Animation? = null
-    private var rotateBackward:Animation? = null
+    private var fabClose: Animation? = null
+    private var rotateForward: Animation? = null
+    private var rotateBackward: Animation? = null
     private var letterList = ArrayList<String>()
     private var numberList = ArrayList<Int>()
     private var sharpList = ArrayList<Int>()
+    private var frequencyList = FloatArray(0)
     private var isEdit = false
-    private lateinit var mRunnable: Runnable
-    private val mHandler = Handler()
+    private var isInitialized = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +38,7 @@ class AddTune : AppCompatActivity() {
         if (toolbar != null) {
             toolbar.title = "Add New Tuning (C4 is Middle C)"
         }
-
+        dataList = ArrayList<Array<Any>>()
         //pre-load parameters if any passed through
         if (intent.getStringArrayListExtra("letter") != null) {
             isEdit = true
@@ -55,6 +46,40 @@ class AddTune : AppCompatActivity() {
             letterList = intent.getStringArrayListExtra("letter") as ArrayList<String>
             numberList = intent.getIntegerArrayListExtra("number") as ArrayList<Int>
             sharpList = intent.getIntegerArrayListExtra("sharp") as ArrayList<Int>
+            frequencyList = intent.getFloatArrayExtra("frequency") as FloatArray
+
+            //initializing listView based on array list
+            for (i in 0 until letterList.size) {
+                if (i == 0){
+                    dataList.add(arrayOf(baseContext.getString(R.string.string_number, (i + 1).toString()) + "(Thickest String)",
+                        frequencyList[i], letterList[i], numberList[i], sharpList[i]))
+                }
+                else {
+                    dataList.add(arrayOf(baseContext.getString(R.string.string_number, (i + 1).toString()),
+                        frequencyList[i], letterList[i], numberList[i], sharpList[i]))
+                }
+            }
+            stringCount += letterList.size - 1
+        }
+        else {
+            //initializing it with standard tuning
+            dataList.add(arrayOf(baseContext.getString(R.string.string_number, stringCount.toString()) + "(Thickest String)",
+                calculateFrequency("E", 2), "E", 2, 0))
+            stringCount += 1
+            dataList.add(arrayOf(baseContext.getString(R.string.string_number, stringCount.toString()),
+                calculateFrequency("A", 2), "A", 2, 0))
+            stringCount += 1
+            dataList.add(arrayOf(baseContext.getString(R.string.string_number, stringCount.toString()),
+                calculateFrequency("D", 3), "D", 3, 0))
+            stringCount += 1
+            dataList.add(arrayOf(baseContext.getString(R.string.string_number, stringCount.toString()),
+                calculateFrequency("G", 3), "G", 3, 0))
+            stringCount += 1
+            dataList.add(arrayOf(baseContext.getString(R.string.string_number, stringCount.toString()),
+                calculateFrequency("B", 3), "B", 3, 0))
+            stringCount += 1
+            dataList.add(arrayOf(baseContext.getString(R.string.string_number, stringCount.toString()),
+                calculateFrequency("E", 3), "E", 4, 0))
         }
 
         fabOpen = AnimationUtils.loadAnimation(applicationContext, R.anim.fab_open)
@@ -62,53 +87,37 @@ class AddTune : AppCompatActivity() {
         rotateForward = AnimationUtils.loadAnimation(applicationContext, R.anim.rotate_forward)
         rotateBackward = AnimationUtils.loadAnimation(applicationContext, R.anim.rotate_backward)
 
-        stringList.add(baseContext.getString(R.string.string_number, stringCount.toString()) + "(Thickest String)")
-        recyclerViewLayoutManager = LinearLayoutManager(this)
-        recyclerViewAdapter = if (letterList.size > 0) {
-            AddingTuneAdapter(stringList, letterList, numberList, sharpList)
-        } else {
-            AddingTuneAdapter(stringList)
-        }
-        recyclerView = findViewById<RecyclerView>(R.id.addingTuneView).apply {
-            layoutManager = recyclerViewLayoutManager
-            adapter = recyclerViewAdapter
-        }
-
-        //initializing recyclerview based on array list
-        for (i in 0 until letterList.size - 1) {
-            stringCount += 1
-            stringList.add(baseContext.getString(R.string.string_number, stringCount.toString()))
-            recyclerViewAdapter.notifyItemInserted(stringCount - 1)
-        }
+        val adapter = AddingTuneListAdapter(dataList)
+        listView = findViewById(R.id.addingTuneView)
+        listView.adapter = adapter
 
         fabUnfold.setOnClickListener {
             animateFAB()
         }
         fabAdd.setOnClickListener {
             stringCount += 1
-            stringList.add(baseContext.getString(R.string.string_number, stringCount.toString()))
-            recyclerViewAdapter.notifyItemInserted(stringCount - 1)
+            dataList.add(arrayOf(baseContext.getString(R.string.string_number, stringCount.toString()), 0f, "", 0, 0))
+            adapter.notifyDataSetChanged()
         }
         fabDelete.setOnClickListener {
             if (stringCount > 1) {
                 stringCount -= 1
-                stringList.removeAt(stringCount)
-                recyclerViewAdapter.notifyItemRemoved(stringCount)
+                dataList.removeAt(stringCount)
+                adapter.notifyDataSetChanged()
             }
         }
         fabSave.setOnClickListener {
             val returnIntent = Intent()
             //Store all related data in separate array / array list
-            val frequencyList = FloatArray(addingTuneView.adapter!!.itemCount)
+            val frequencyList = FloatArray(listView.count)
             letterList.clear()
             numberList.clear()
             sharpList.clear()
-            for (i in 0 until addingTuneView.adapter!!.itemCount) {
-                setActiveUserPosition(i)
-                frequencyList[i] = addingTuneView.findViewHolderForAdapterPosition(i)?.itemView?.tune_frequency?.tag as Float
-                var letter = addingTuneView.findViewHolderForAdapterPosition(i)?.itemView?.tune_letter?.selectedItem.toString()
-                val number = addingTuneView.findViewHolderForAdapterPosition(i)?.itemView?.tune_number?.selectedItem.toString().toInt()
-                var sharp = if (addingTuneView.findViewHolderForAdapterPosition(i)?.itemView?.tune_sharp_checkBox?.isChecked!!) 1 else 0
+            for (i in 0 until listView.count) {
+                frequencyList[i] = (listView.getItemAtPosition(i) as Array<*>)[1] as Float
+                var letter = (listView.getItemAtPosition(i) as Array<*>)[2].toString()
+                val number = (listView.getItemAtPosition(i) as Array<*>)[3].toString().toInt()
+                var sharp = (listView.getItemAtPosition(i) as Array<*>)[4].toString().toInt()
                 //Check for non-existing input - B# and E#
                 if (letter == "B" && sharp == 1) {
                     letter = "C"
@@ -143,14 +152,33 @@ class AddTune : AppCompatActivity() {
                 hideKeyboard(v)
             }
         }
-    }
 
-    private fun setActiveUserPosition(position: Int) {
-        val lastVisible = (recyclerViewLayoutManager as LinearLayoutManager).findLastVisibleItemPosition()
-        val firstVisible = (recyclerViewLayoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
-        if (lastVisible < position || firstVisible > position) {
-            addingTuneView.scrollToPosition(position)
-        }
+        listView.setOnScrollListener(object: AbsListView.OnScrollListener {
+            override fun onScroll(view: AbsListView?, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {
+                if (firstVisibleItem > 0) {
+                    fabAdd.show()
+                    fabSave.show()
+                    fabDelete.show()
+                    fabUnfold.show()
+                    fabUnfold.hide()
+                    fabAdd.hide()
+                    fabSave.hide()
+                    fabDelete.hide()
+                    isInitialized = true
+                }else {
+                    if (isInitialized) {
+                        fabAdd.show()
+                        fabSave.show()
+                        fabDelete.show()
+                        fabUnfold.show()
+                    }
+                }
+            }
+
+            override fun onScrollStateChanged(view: AbsListView?, scrollState: Int) {
+            }
+
+        })
     }
 
     private fun hideKeyboard(view: View) {
@@ -183,7 +211,7 @@ class AddTune : AppCompatActivity() {
 
     private fun showDialog(title: String, message: String, returnIntent: Intent){
         // Late initialize an alert dialog object
-        lateinit var dialog:AlertDialog
+        lateinit var dialog: AlertDialog
 
 
         // Initialize a new instance of alert dialog builder object

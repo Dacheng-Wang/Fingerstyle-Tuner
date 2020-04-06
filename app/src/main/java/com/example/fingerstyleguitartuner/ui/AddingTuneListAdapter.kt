@@ -2,26 +2,15 @@ package com.example.fingerstyleguitartuner.ui
 
 import android.content.Context
 import android.os.CountDownTimer
-import android.view.*
-import android.view.GestureDetector.SimpleOnGestureListener
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.*
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
 import com.example.fingerstyleguitartuner.R
 import net.mabboud.android_tone_player.OneTimeBuzzer
 import kotlin.math.pow
 
-
-class AddingTuneAdapter(private val tuneList: ArrayList<String>, private val letterList: ArrayList<String>? = null,
-                               private val numberList: ArrayList<Int>? = null, private val sharpList: ArrayList<Int>? = null) :
-    RecyclerView.Adapter<AddingTuneAdapter.AddingTuneViewHolder>() {
-    // Provide a reference to the views for each data item
-    // Complex data items may need more than one view per item, and
-    // you provide access to all the views for a data item in a view holder.
-    // Each data item is just a string in this case that is shown in a TextView.
-
-    class AddingTuneViewHolder(val view: View, val textView: TextView) : RecyclerView.ViewHolder(view)
+class AddingTuneListAdapter(private val dataList: ArrayList<Array<Any>>): BaseAdapter() {
     private lateinit var selectedLetter: String
     private var selectedNumber: Int = 0
     private lateinit var checkBox: CheckBox
@@ -31,43 +20,53 @@ class AddingTuneAdapter(private val tuneList: ArrayList<String>, private val let
     private lateinit var tunePlay: ImageButton
     private lateinit var viewGroup: ViewGroup
     private lateinit var timer: CountDownTimer
-    // Create new views (invoked by the layout manager)
-    override fun onCreateViewHolder(parent: ViewGroup,
-                                    viewType: Int): AddingTuneViewHolder {
+
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View? {
         viewGroup = parent
-        // create a new view
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.recyclerview_tuning_items, parent, false) as View
-        val textView = view.findViewById<TextView>(R.id.string_num)
+        var view = convertView
+        if (view == null) {
+            val inflater = LayoutInflater.from(parent.context)
+            view = inflater.inflate(R.layout.listview_tuning_items, parent, false)
+        }
+        if (view != null) {
+            val textView = view.findViewById<TextView>(R.id.string_num)
+            textView.text = dataList[position][0].toString()
+            //get checkbox and TextView
+            checkBox = view.findViewById(R.id.tune_sharp_checkBox)
+            frequencyTextView = view.findViewById(R.id.tune_frequency)
+            //set value for spinners
+            spinnerLetter = view.findViewById<Spinner>(R.id.tune_letter)
+            val letterAdapter = ArrayAdapter(parent.context,
+                R.layout.spinner_item, parent.resources.getStringArray(R.array.tuneLetterList))
+            spinnerLetter.adapter = letterAdapter
 
-        //get checkbox and TextView
-        checkBox = view.findViewById<CheckBox>(R.id.tune_sharp_checkBox)
-        frequencyTextView = view.findViewById<TextView>(R.id.tune_frequency)
-        //set value for spinners
-        spinnerLetter = view.findViewById<Spinner>(R.id.tune_letter)
-        val letterAdapter = ArrayAdapter(parent.context,
-            R.layout.spinner_item, parent.resources.getStringArray(R.array.tuneLetterList))
-        spinnerLetter.adapter = letterAdapter
+            spinnerNumber = view.findViewById<Spinner>(R.id.tune_number)
+            val numberAdapter = ArrayAdapter(parent.context,
+                R.layout.spinner_item, parent.resources.getStringArray(R.array.tuneNumberList))
+            spinnerNumber.adapter = numberAdapter
 
-        spinnerNumber = view.findViewById<Spinner>(R.id.tune_number)
-        val numberAdapter = ArrayAdapter(parent.context,
-            R.layout.spinner_item, parent.resources.getStringArray(R.array.tuneNumberList))
-        spinnerNumber.adapter = numberAdapter
-        //Initialize Frequency TextView
-        selectedLetter = spinnerLetter.selectedItem.toString()
-        selectedNumber = Integer.parseInt(spinnerNumber.selectedItem.toString())
-        refreshFrequency(parent.context)
+            //check if it's isEdit
+            if (dataList[position][2] != "") {
+                spinnerLetter.setSelection(viewGroup.resources.getStringArray(R.array.tuneLetterList).indexOf(dataList[position][2]))
+                spinnerNumber.setSelection(viewGroup.resources.getStringArray(R.array.tuneNumberList).indexOf(dataList[position][3].toString()))
+                checkBox.isChecked = dataList[position][4] == 1
+            }
 
+            //Initialize Frequency TextView
+            selectedLetter = spinnerLetter.selectedItem.toString()
+            selectedNumber = Integer.parseInt(spinnerNumber.selectedItem.toString())
+            refreshFrequency(parent.context)
+        }
         //Update frequency upon selection change
         spinnerLetter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onNothingSelected(parent: AdapterView<*>?) {
 
             }
 
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, positionSelected: Int, id: Long) {
                 if (view != null) {
                     if (parent != null) {
-                        refreshSelected(parent.context, view, false)
+                        refreshSelected(parent.context, view, false, position)
                     }
                 }
                 selectedLetter = spinnerLetter.selectedItem.toString()
@@ -82,10 +81,10 @@ class AddingTuneAdapter(private val tuneList: ArrayList<String>, private val let
 
             }
 
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, positionSelected: Int, id: Long) {
                 if (view != null) {
                     if (parent != null) {
-                        refreshSelected(parent.context, view, false)
+                        refreshSelected(parent.context, view, false, position)
                     }
                 }
                 selectedLetter = spinnerLetter.selectedItem.toString()
@@ -96,15 +95,17 @@ class AddingTuneAdapter(private val tuneList: ArrayList<String>, private val let
             }
         }
         checkBox.setOnClickListener {
-            refreshSelected(parent.context, it, true)
+            refreshSelected(parent.context, it, true, position)
             selectedLetter = spinnerLetter.selectedItem.toString()
             selectedNumber = Integer.parseInt(spinnerNumber.selectedItem.toString())
             refreshFrequency(parent.context)
         }
-        tunePlay = view.findViewById<ImageButton>(R.id.tune_play)
+        if (view != null) {
+            tunePlay = view.findViewById<ImageButton>(R.id.tune_play)
+        }
 
         tunePlay.setOnClickListener {
-            refreshSelected(parent.context, it, true)
+            refreshSelected(parent.context, it, true, position)
             produceSoundFromFrequency(it as View, frequencyTextView.tag as Float, 5)
             if (::timer.isInitialized) timer.cancel()
             timer = object: CountDownTimer(5000, 5000) {
@@ -121,11 +122,10 @@ class AddingTuneAdapter(private val tuneList: ArrayList<String>, private val let
             timer.start()
         }
 
-        // set the view's size, margins, paddings and layout parameters
-        return AddingTuneViewHolder(view, textView)
+        return view
     }
 
-    fun refreshFrequency(context: Context) {
+    private fun refreshFrequency(context: Context) {
         var noteLetter = selectedLetter
         if (checkBox.isChecked){
             noteLetter += '#'
@@ -136,74 +136,35 @@ class AddingTuneAdapter(private val tuneList: ArrayList<String>, private val let
         frequencyTextView.text = context.getString(R.string.frequency, context.getString(R.string.rounding).format(frequency))
     }
 
-    fun refreshSelected(context: Context, viewChild: View, isOnClick: Boolean) {
+    fun refreshSelected(context: Context, viewChild: View, isOnClick: Boolean, position: Int) {
         val view: ViewGroup = (if (isOnClick) {
             viewChild.parent
         } else {
             viewChild.parent.parent
         }) as ViewGroup
-        checkBox = view.findViewById<CheckBox>(R.id.tune_sharp_checkBox)
-        frequencyTextView = view.findViewById<TextView>(R.id.tune_frequency)
-        spinnerLetter = view.findViewById<Spinner>(R.id.tune_letter)
-        spinnerNumber = view.findViewById<Spinner>(R.id.tune_number)
-        tunePlay = view.findViewById<ImageButton>(R.id.tune_play)
+        checkBox = view.findViewById(R.id.tune_sharp_checkBox)
+        frequencyTextView = view.findViewById(R.id.tune_frequency)
+        spinnerLetter = view.findViewById(R.id.tune_letter)
+        spinnerNumber = view.findViewById(R.id.tune_number)
+        tunePlay = view.findViewById(R.id.tune_play)
+
+        dataList[position] = arrayOf(dataList[position][0], frequencyTextView.tag as Float,
+            spinnerLetter.selectedItem.toString(), spinnerNumber.selectedItem.toString().toInt(), if(checkBox.isChecked) 1 else 0)
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
-    override fun onBindViewHolder(holder: AddingTuneViewHolder, position: Int) {
-        // - get element from your dataset at this position
-        // - replace the contents of the view with that element
-        holder.textView.text = tuneList[position]
-        if (letterList != null && numberList != null && sharpList != null && letterList.size > position) {
-            holder.view.findViewById<Spinner>(R.id.tune_letter).setSelection(viewGroup.resources.getStringArray(R.array.tuneLetterList).indexOf(letterList[position]))
-            holder.view.findViewById<Spinner>(R.id.tune_number).setSelection(viewGroup.resources.getStringArray(R.array.tuneNumberList).indexOf(numberList[position].toString()))
-            holder.view.findViewById<CheckBox>(R.id.tune_sharp_checkBox).isChecked = sharpList[position] == 1
-        }
+    override fun getItem(position: Int): Any {
+        return dataList[position]
     }
 
-    override fun getItemCount() = tuneList.size
-}
-
-class AddingTuneItemClickListener(
-    context: Context?,
-    recyclerView: RecyclerView,
-    private val mListener: OnItemClickListener?
-) :
-    OnItemTouchListener {
-
-    interface OnItemClickListener {
-        fun onItemClick(view: View?, position: Int)
-        fun onLongItemClick(view: View?, position: Int)
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
     }
 
-    var mGestureDetector: GestureDetector
-    override fun onInterceptTouchEvent(view: RecyclerView, e: MotionEvent): Boolean {
-        val childView: View? = view.findChildViewUnder(e.x, e.y)
-        if (childView != null && mListener != null && mGestureDetector.onTouchEvent(e)) {
-            mListener.onItemClick(childView, view.getChildAdapterPosition(childView))
-            return true
-        }
-        return false
-    }
-
-    override fun onTouchEvent(view: RecyclerView, motionEvent: MotionEvent) {}
-    override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
-
-    init {
-        mGestureDetector = GestureDetector(context, object : SimpleOnGestureListener() {
-            override fun onSingleTapUp(e: MotionEvent): Boolean {
-                return true
-            }
-
-            override fun onLongPress(e: MotionEvent) {
-                val child: View? = recyclerView.findChildViewUnder(e.x, e.y)
-                if (child != null && mListener != null) {
-                    mListener.onLongItemClick(child, recyclerView.getChildAdapterPosition(child))
-                }
-            }
-        })
+    override fun getCount(): Int {
+        return dataList.size
     }
 }
+
 fun calculateFrequency(noteLetter: String, noteNumber: Int): Float{
     val baseFrequency = 440
     val exp = (1.0/12.0).toFloat()
@@ -299,5 +260,4 @@ fun produceSoundFromFrequency(view: View, frequency: Float, seconds: Int) {
         isPlaying = true
         (view as ImageButton).setImageResource(R.drawable.ic_pause_orange_24dp)
     }
-
 }

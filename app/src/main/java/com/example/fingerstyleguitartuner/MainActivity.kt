@@ -192,7 +192,7 @@ class MainActivity : AppCompatActivity() {
                 buzzer.stop()
                 timer.cancel()
             }
-            val intent = Intent(this@MainActivity, AddTune::class.java)
+            val intent = Intent(this@MainActivity, AddingTune::class.java)
             startActivityForResult(intent, LAUNCH_ADD_TUNE)
         }
     }
@@ -295,11 +295,12 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.edit ->
             {
-                val intent = Intent(this@MainActivity, AddTune::class.java)
+                val intent = Intent(this@MainActivity, AddingTune::class.java)
                 intent.putExtra("name", nameLists[tuneIndex])
                 intent.putExtra("letter", letterLists[tuneIndex])
                 intent.putExtra("number", numberLists[tuneIndex])
                 intent.putExtra("sharp", sharpLists[tuneIndex])
+                intent.putExtra("frequency", frequencyLists[tuneIndex])
                 startActivityForResult(intent, LAUNCH_ADD_TUNE)
                 return true
             }
