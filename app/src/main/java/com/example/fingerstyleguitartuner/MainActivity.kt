@@ -7,6 +7,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.ContextMenu
@@ -428,6 +429,11 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_license -> {
                 startActivity(Intent(this, OssLicensesMenuActivity::class.java))
+                return true
+            }
+            R.id.action_source -> {
+                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Dacheng-Wang/Fingerstyle-Tuner"))
+                startActivity(browserIntent)
                 return true
             }
 
