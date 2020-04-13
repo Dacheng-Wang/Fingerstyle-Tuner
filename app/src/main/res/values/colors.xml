@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#86BC25</color>
-    <color name="colorPrimaryDark">#43B02A</color>
+    <color name="colorPrimary">#3B5766</color>
+    <color name="colorPrimaryDark">#2D4453</color>
     <color name="colorAccent">#ED8B00</color>
 
     <color name="black">#212121</color>
@@ -15,6 +15,6 @@
     <color name="circle_tuner_view_default_outer_circle_color">@color/colorAccent</color>
     <color name="circle_tuner_view_default_inner_circle_color">#007CB0</color>
     <color name="circle_tuner_view_default_text_color">@color/white</color>
-    <color name="circle_tuner_view_default_in_tune_color">@color/colorPrimaryDark</color>
+    <color name="circle_tuner_view_default_in_tune_color">#43B02A</color>
     <color name="circle_tuner_view_default_out_of_tune_color">@color/attention</color>
 </resources>
