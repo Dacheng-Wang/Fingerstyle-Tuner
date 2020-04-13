@@ -9,7 +9,6 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.os.PersistableBundle
 import android.view.ContextMenu
 import android.view.ContextMenu.ContextMenuInfo
 import android.view.Menu
@@ -24,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fingerstyleguitartuner.ui.MyAdapter
 import com.example.fingerstyleguitartuner.ui.RecyclerItemClickListener
 import com.example.fingerstyleguitartuner.ui.calculateFrequency
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_main.*
 import net.mabboud.android_tone_player.OneTimeBuzzer
@@ -426,6 +426,11 @@ class MainActivity : AppCompatActivity() {
                 dialog.show()
                 return true
             }
+            R.id.action_license -> {
+                startActivity(Intent(this, OssLicensesMenuActivity::class.java))
+                return true
+            }
+
             else -> super.onOptionsItemSelected(item)
         }
     }

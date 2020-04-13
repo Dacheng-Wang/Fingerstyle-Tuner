@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.google.android.gms.oss-licenses-plugin'
 
 android {
     compileSdkVersion 29
@@ -52,4 +53,5 @@ dependencies {
     implementation 'net.mabboud:android-tone-player:0.2'
     implementation 'com.tbuonomo.andrui:viewpagerdotsindicator:4.1.2'
     implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.google.android.gms:play-services-oss-licenses:17.0.0'
 }

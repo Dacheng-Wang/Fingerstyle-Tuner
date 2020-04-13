@@ -7,4 +7,9 @@
         android:orderInCategory="100"
         android:title="@string/action_reset"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_license"
+        android:orderInCategory="100"
+        android:title="@string/action_license"
+        app:showAsAction="never" />
 </menu>

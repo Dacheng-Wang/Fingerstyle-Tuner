@@ -1,18 +1,12 @@
 package com.example.fingerstyleguitartuner
 
-import android.animation.ArgbEvaluator
-import android.animation.ObjectAnimator
-import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.adapter.FragmentViewHolder
 import androidx.viewpager2.widget.ViewPager2
 import be.tarsos.dsp.AudioProcessor
 import be.tarsos.dsp.io.android.AudioDispatcherFactory
@@ -23,7 +17,6 @@ import com.example.fingerstyleguitartuner.fragment.CircleGuitarTunerFragment
 import com.example.fingerstyleguitartuner.fragment.currentPage
 import com.example.fingerstyleguitartuner.ui.CircleTunerView
 import com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
-import kotlinx.android.synthetic.main.activity_screen_slide.*
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
