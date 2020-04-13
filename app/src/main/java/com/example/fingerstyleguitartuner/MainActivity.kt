@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
     private var nameLists = ArrayList<String>()
     private lateinit var pref: SharedPreferences
     private var isReset = false
+    private var itemSelected = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -140,6 +141,7 @@ class MainActivity : AppCompatActivity() {
         recyclerView.addOnItemTouchListener(
             RecyclerItemClickListener(this, recyclerView, object : RecyclerItemClickListener.OnItemClickListener {
                 override fun onItemClick(view: View?, position: Int) {
+                    itemSelected = position
                     // Here, thisActivity is the current activity
                     if (ContextCompat.checkSelfPermission(this@MainActivity,
                             Manifest.permission.RECORD_AUDIO)
@@ -222,6 +224,10 @@ class MainActivity : AppCompatActivity() {
             1 -> {
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     val intent = Intent(this@MainActivity, DisplayTuner::class.java)
+                    val noteList = combineLetterAndSharp(letterLists[itemSelected], sharpLists[itemSelected])
+                    intent.putExtra("note", noteList)
+                    intent.putExtra("frequency", frequencyLists[itemSelected])
+                    intent.putExtra("name", nameLists[itemSelected])
                     startActivity(intent)
                 }
             }
