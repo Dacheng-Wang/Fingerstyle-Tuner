@@ -20,7 +20,7 @@
         android:textAlignment="center"
         android:textColor="@color/colorPrimary"/>
 
-    <com.example.fingerstyleguitartuner.ui.CircleTunerView
+    <com.lkharry.fingerstyletuner.ui.CircleTunerView
         android:id="@+id/circleTunerView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

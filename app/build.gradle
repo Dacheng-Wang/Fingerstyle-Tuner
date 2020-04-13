@@ -7,7 +7,7 @@ android {
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
     defaultConfig {
-        applicationId "com.example.fingerstyleguitartuner"
+        applicationId "com.lkharry.fingerstyletuner"
         minSdkVersion 16
         targetSdkVersion 29
         versionCode 1
