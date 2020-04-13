@@ -3,23 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.fingerstyleguitartuner.MainActivity">
     <item
-        android:id="@+id/open"
-        android:orderInCategory="100"
-        android:title="Open"
-        app:showAsAction="never"/>
-    <item
         android:id="@+id/play"
         android:orderInCategory="100"
-        android:title="Play"
+        android:title="@string/play"
         app:showAsAction="never"/>
     <item
         android:id="@+id/edit"
         android:orderInCategory="100"
-        android:title="Edit"
+        android:title="@string/edit"
         app:showAsAction="never"/>
     <item
         android:id="@+id/delete"
         android:orderInCategory="100"
-        android:title="Delete"
+        android:title="@string/delete"
         app:showAsAction="never"/>
 </menu>

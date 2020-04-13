@@ -1,10 +1,16 @@
 package com.example.fingerstyleguitartuner
 
+import android.animation.ArgbEvaluator
+import android.animation.ObjectAnimator
+import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.adapter.FragmentViewHolder
 import androidx.viewpager2.widget.ViewPager2
@@ -17,6 +23,7 @@ import com.example.fingerstyleguitartuner.fragment.CircleGuitarTunerFragment
 import com.example.fingerstyleguitartuner.fragment.currentPage
 import com.example.fingerstyleguitartuner.ui.CircleTunerView
 import com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
+import kotlinx.android.synthetic.main.activity_screen_slide.*
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -27,6 +34,9 @@ lateinit var frequencyList: FloatArray
 var stringList = ArrayList<String>()
 class DisplayTuner : AppCompatActivity() {
     var numPages = 0
+    private lateinit var warningText: TextView
+    private lateinit var tuner: CircleTunerView
+    private var isInitailized = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val toolbar = supportActionBar
@@ -40,17 +50,19 @@ class DisplayTuner : AppCompatActivity() {
         //Prepare items from noteList
         stringList = ArrayList<String>()
         for (i in 0 until numPages) {
-            if (i == 0) stringList.add(baseContext.getString(R.string.string_number, (i + 1).toString()) + "(Thickest String)")
+            if (i == 0) stringList.add(baseContext.getString(R.string.string_number, (i + 1).toString()) + "\n(Thickest String)")
             else stringList.add(baseContext.getString(R.string.string_number, (i + 1).toString()))
         }
-
         setContentView(R.layout.activity_screen_slide)
+
         // Instantiate a ViewPager2 and a PagerAdapter.
         val viewPager: ViewPager2 = findViewById(R.id.pager)
         viewPager.setPageTransformer(ZoomOutPageTransformer())
         // The pager adapter, which provides the pages to the view pager widget.
         val pagerAdapter = ScreenSlidePagerAdapter(this)
         viewPager.adapter = pagerAdapter
+        val pageListener = PageListener()
+        viewPager.registerOnPageChangeCallback(pageListener)
         var frequencyRange = ArrayList<Double>()
         var counter = 0
         val dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050, 1024, 0)
@@ -58,48 +70,49 @@ class DisplayTuner : AppCompatActivity() {
             val pitchInHz = result.pitch
             runOnUiThread {
                 counter += 1
-                if (counter > 10) {
+                if (counter > 20) {
                     counter = 0
                     frequencyRange = ArrayList<Double>()
                 }
+                warningText = findViewById(R.id.tuningWarning)
+                tuner = findViewById(R.id.circleTunerView)
+                isInitailized = true
                 val frequencyText = findViewById<TextView>(R.id.capturedFrequency)
-                frequencyText.text = getString(R.string.frequency, pitchInHz.toString())
+                //frequencyText.text = getString(R.string.frequency, pitchInHz.toString())
                 frequencyText.tag = pitchInHz
-                val frequency = (pitchInHz as Float).toDouble()
+                val frequency = pitchInHz.toDouble()
                 if (frequency != -1.0) {
-                    if (frequencyRange.size < 5) frequencyRange.add(frequency)
+                    if (frequencyRange.size < 10) frequencyRange.add(frequency)
                     else {
                         val tempList = frequencyRange.clone() as ArrayList<Double>
                         tempList.add(frequency)
                         if (calculateSD(frequencyRange) > calculateSD(tempList)) {
                             frequencyRange = replaceOutlier(frequencyRange, frequency)
-                            val tuner = findViewById<CircleTunerView>(R.id.circleTunerView)
+                            currentPage = viewPager.currentItem
                             val variance = tuner.updateIndicator2Angle(frequencyText, frequencyList[currentPage].toDouble())
-                            val warningText = findViewById<TextView>(R.id.tuningWarning)
                             if (pitchInHz == -1f) warningText.text = null
                             else {
-                                when (variance) {
-                                    1 -> {
-                                        warningText.text = getString(R.string.octave_too_high)
-                                        tuner.outOfTuneChangeColor()
-                                        /*val colorFade: ObjectAnimator = ObjectAnimator.ofObject(
-                                            pager,
-                                            "backgroundColor" *//*view attribute name*//*,
-                                            ArgbEvaluator(),
-                                            Color.argb(255,255,255,255) *//*from color*//*,
-                                            Color.argb(0,0,0,0)
-                                        )
-                                        colorFade.duration = 3500
-                                        colorFade.startDelay = 200
-                                        colorFade.start()*/
-                                    }
-                                    -1 -> {
-                                        warningText.text = getString(R.string.octave_too_low)
-                                        tuner.outOfTuneChangeColor()
-                                    }
-                                    else -> {
-                                        warningText.text = null
+                                if (pitchInHz > (pitchInHz - variance) * 2 ) {
+                                    warningText.text = getString(R.string.octave_too_high)
+                                    warningText.setTextColor(ContextCompat.getColor(baseContext, R.color.circle_tuner_view_default_out_of_tune_color))
+                                    tuner.outOfTuneChangeColor()
+                                }
+                                else if (pitchInHz < (pitchInHz - variance) / 2) {
+                                    warningText.text = getString(R.string.octave_too_low)
+                                    warningText.setTextColor(ContextCompat.getColor(baseContext, R.color.circle_tuner_view_default_out_of_tune_color))
+                                    tuner.outOfTuneChangeColor()
+                                }
+                                else {
+                                    if (abs(variance) / (pitchInHz - variance) < 0.01) {
+                                        warningText.text = getString(R.string.octave_tune_perfect)
+                                        warningText.setTextColor(ContextCompat.getColor(baseContext, R.color.circle_tuner_view_default_in_tune_color))
                                         tuner.inTuneChangeColor()
+                                    }
+                                    else {
+                                        if (variance > 0) warningText.text = getString(R.string.octave_tune_high)
+                                        else warningText.text = getString(R.string.octave_tune_low)
+                                        warningText.setTextColor(ContextCompat.getColor(baseContext, R.color.circle_tuner_view_default_inner_circle_color))
+                                        tuner.inRangeChangeColor()
                                     }
                                 }
                             }
@@ -120,10 +133,9 @@ class DisplayTuner : AppCompatActivity() {
     }
 
     private fun calculateSD(numArray: ArrayList<Double>): Double {
-        var sum = 0.0
         var standardDeviation = 0.0
 
-        sum = numArray.sum()
+        val sum = numArray.sum()
 
         val mean = sum / numArray.size
 
@@ -156,6 +168,17 @@ class DisplayTuner : AppCompatActivity() {
         override fun getItemCount(): Int = numPages
 
         override fun createFragment(position: Int): Fragment = CircleGuitarTunerFragment(position)
+    }
+
+    private inner class PageListener: ViewPager2.OnPageChangeCallback() {
+        override fun onPageSelected(position: Int) {
+            super.onPageSelected(position)
+            if (isInitailized) {
+                warningText.text = null
+                warningText.setTextColor(ContextCompat.getColor(baseContext, R.color.circle_tuner_view_default_inner_circle_color))
+                tuner.inRangeChangeColor()
+            }
+        }
     }
 
 }

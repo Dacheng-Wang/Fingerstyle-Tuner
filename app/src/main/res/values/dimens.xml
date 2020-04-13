@@ -10,7 +10,7 @@
     <dimen name="text_size_xsmall">14sp</dimen>
     <dimen name="text_size_small">16sp</dimen>
     <dimen name="text_size_medium">24sp</dimen>
-    <dimen name="text_size_large">48sp</dimen>
+    <dimen name="text_size_large">36sp</dimen>
 
     <dimen name="permission_title_top_margin">80dp</dimen>
 

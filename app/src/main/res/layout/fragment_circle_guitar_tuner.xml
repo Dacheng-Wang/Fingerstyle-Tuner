@@ -15,8 +15,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_high"
-        android:textSize="@dimen/text_size_medium"
+        android:textSize="@dimen/text_size_large"
         android:gravity="center"
+        android:textAlignment="center"
         android:textColor="@color/colorPrimary"/>
 
     <com.example.fingerstyleguitartuner.ui.CircleTunerView
@@ -30,6 +31,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:textColor="@color/attention"
-        android:layout_marginBottom="@dimen/spacing_medium"/>
+        android:textSize="@dimen/text_size_large"
+        android:textAlignment="center"
+        android:layout_marginBottom="@dimen/spacing_high"/>
 </FrameLayout>

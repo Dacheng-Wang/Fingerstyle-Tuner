@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">FingerstyleGuitarTuner</string>
     <string name="action_settings">Settings</string>
+    <string name="action_reset">Reset</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
@@ -14,8 +15,14 @@
     <string name="rounding">%.2f</string>
     <string name="frequency">%1$s Hz</string>
     <string name="string_number">String #%1$s</string>
-    <string name="octave_too_high">Captured pitch is too high!</string>
-    <string name="octave_too_low">Captured pitch is too low!</string>
+    <string name="octave_too_high">Wrong String\n(too high)</string>
+    <string name="octave_too_low">Wrong String\n(too low)</string>
+    <string name="octave_tune_high">Tune Down!</string>
+    <string name="octave_tune_low">Tune Up!</string>
+    <string name="octave_tune_perfect">Perfect!</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="play">Play</string>
     //List of tune letters
     <string-array name="tuneLetterList">
         <item>C</item>

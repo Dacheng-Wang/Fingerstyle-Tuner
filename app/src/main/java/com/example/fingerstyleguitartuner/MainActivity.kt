@@ -2,11 +2,14 @@ package com.example.fingerstyleguitartuner
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.PersistableBundle
 import android.view.ContextMenu
 import android.view.ContextMenu.ContextMenuInfo
 import android.view.Menu
@@ -20,14 +23,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fingerstyleguitartuner.ui.MyAdapter
 import com.example.fingerstyleguitartuner.ui.RecyclerItemClickListener
-import com.example.fingerstyleguitartuner.ui.buzzer
 import com.example.fingerstyleguitartuner.ui.calculateFrequency
+import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_main.*
 import net.mabboud.android_tone_player.OneTimeBuzzer
-import java.util.concurrent.TimeUnit
+import java.io.Serializable
 
 
-const val EXTRA_MESSAGE = "com.example.fingerstyleguitartuner.MESSAGE"
 const val LAUNCH_ADD_TUNE = 1
 
 class MainActivity : AppCompatActivity() {
@@ -35,89 +37,104 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recyclerViewAdapter: RecyclerView.Adapter<*>
     private lateinit var recyclerViewLayoutManager: RecyclerView.LayoutManager
     private var tuneIndex = 0
-    private val list = ArrayList<String>()
+    private var list = ArrayList<String>()
     private var letterLists = ArrayList<ArrayList<String>>()
     private var numberLists = ArrayList<ArrayList<Int>>()
     private var sharpLists = ArrayList<ArrayList<Int>>()
     private var frequencyLists = ArrayList<FloatArray>()
     private var nameLists = ArrayList<String>()
+    private lateinit var pref: SharedPreferences
+    private var isReset = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        list.add("Standard Tuning (EADGBE)")
-        nameLists.add("Standard Tuning")
-        letterLists.add(arrayListOf("E", "A", "D", "G", "B", "E"))
-        numberLists.add(arrayListOf(2, 2, 3, 3, 3, 4))
-        sharpLists.add(arrayListOf(0, 0, 0, 0, 0, 0))
-        frequencyLists.add(floatArrayOf(calculateFrequency("E", 2), calculateFrequency("A", 2),
-            calculateFrequency("D", 3), calculateFrequency("G", 3),
-            calculateFrequency("B", 3), calculateFrequency("E", 4)))
-
-        list.add("Drop D (DADGBE)")
-        nameLists.add("Drop D")
-        letterLists.add(arrayListOf("D", "A", "D", "G", "B", "E"))
-        numberLists.add(arrayListOf(2, 2, 3, 3, 3, 4))
-        sharpLists.add(arrayListOf(0, 0, 0, 0, 0, 0))
-        frequencyLists.add(floatArrayOf(calculateFrequency("D", 2), calculateFrequency("A", 2),
-            calculateFrequency("D", 3), calculateFrequency("G", 3),
-            calculateFrequency("B", 3), calculateFrequency("E", 4)))
-
-        list.add("Celtic Tuning (DADGAD)")
-        nameLists.add("Celtic Tuning")
-        letterLists.add(arrayListOf("D", "A", "D", "G", "A", "D"))
-        numberLists.add(arrayListOf(2, 2, 3, 3, 3, 4))
-        sharpLists.add(arrayListOf(0, 0, 0, 0, 0, 0))
-        frequencyLists.add(floatArrayOf(calculateFrequency("D", 2), calculateFrequency("A", 2),
-            calculateFrequency("D", 3), calculateFrequency("G", 3),
-            calculateFrequency("A", 3), calculateFrequency("D", 4)))
-
-        list.add("D Standard (DGCFAD)")
-        nameLists.add("D Standard")
-        letterLists.add(arrayListOf("D", "G", "C", "F", "A", "D"))
-        numberLists.add(arrayListOf(2, 2, 3, 3, 3, 4))
-        sharpLists.add(arrayListOf(0, 0, 0, 0, 0, 0))
-        frequencyLists.add(floatArrayOf(calculateFrequency("D", 2), calculateFrequency("G", 2),
-            calculateFrequency("C", 3), calculateFrequency("F", 3),
-            calculateFrequency("A", 3), calculateFrequency("D", 4)))
-
-        list.add("Open D (DADF#AD)")
-        nameLists.add("Open D")
-        letterLists.add(arrayListOf("D", "A", "D", "F", "A", "D"))
-        numberLists.add(arrayListOf(2, 2, 3, 3, 3, 4))
-        sharpLists.add(arrayListOf(0, 0, 0, 1, 0, 0))
-        frequencyLists.add(floatArrayOf(calculateFrequency("D", 2), calculateFrequency("A", 2),
-            calculateFrequency("D", 3), calculateFrequency("F#", 3),
-            calculateFrequency("A", 3), calculateFrequency("D", 4)))
-
-        list.add("Open C (CGCGCE)")
-        nameLists.add("Open C")
-        letterLists.add(arrayListOf("C", "G", "C", "G", "C", "E"))
-        numberLists.add(arrayListOf(2, 2, 3, 3, 4, 4))
-        sharpLists.add(arrayListOf(0, 0, 0, 0, 0, 0))
-        frequencyLists.add(floatArrayOf(calculateFrequency("C", 2), calculateFrequency("G", 2),
-            calculateFrequency("C", 3), calculateFrequency("G", 3),
-            calculateFrequency("C", 4), calculateFrequency("E", 4)))
-
-        list.add("Drop C (CGCFAD)")
-        nameLists.add("Drop C")
-        letterLists.add(arrayListOf("C", "G", "C", "F", "A", "D"))
-        numberLists.add(arrayListOf(2, 2, 3, 3, 3, 4))
-        sharpLists.add(arrayListOf(0, 0, 0, 0, 0, 0))
-        frequencyLists.add(floatArrayOf(calculateFrequency("C", 2), calculateFrequency("G", 2),
-            calculateFrequency("C", 3), calculateFrequency("F", 3),
-            calculateFrequency("A", 3), calculateFrequency("D", 4)))
-
-
         super.onCreate(savedInstanceState)
+        pref = getPreferences(Context.MODE_PRIVATE)
+        val gson = Gson()
+        val json = pref.getString("data", null)
+        if (json != null) {
+            val dataHelper = gson.fromJson(json, DataHelper::class.java)
+            list = dataHelper.getTunes()
+            nameLists = dataHelper.getNames()
+            letterLists = dataHelper.getLetters()
+            numberLists = dataHelper.getNumbers()
+            sharpLists = dataHelper.getSharps()
+            frequencyLists = dataHelper.getFrequencies()
+        }
+        else {
+            list.add("Standard Tuning (EADGBE)")
+            nameLists.add("Standard Tuning")
+            letterLists.add(arrayListOf("E", "A", "D", "G", "B", "E"))
+            numberLists.add(arrayListOf(2, 2, 3, 3, 3, 4))
+            sharpLists.add(arrayListOf(0, 0, 0, 0, 0, 0))
+            frequencyLists.add(floatArrayOf(calculateFrequency("E", 2), calculateFrequency("A", 2),
+                calculateFrequency("D", 3), calculateFrequency("G", 3),
+                calculateFrequency("B", 3), calculateFrequency("E", 4)))
+
+            list.add("Drop D (DADGBE)")
+            nameLists.add("Drop D")
+            letterLists.add(arrayListOf("D", "A", "D", "G", "B", "E"))
+            numberLists.add(arrayListOf(2, 2, 3, 3, 3, 4))
+            sharpLists.add(arrayListOf(0, 0, 0, 0, 0, 0))
+            frequencyLists.add(floatArrayOf(calculateFrequency("D", 2), calculateFrequency("A", 2),
+                calculateFrequency("D", 3), calculateFrequency("G", 3),
+                calculateFrequency("B", 3), calculateFrequency("E", 4)))
+
+            list.add("Celtic Tuning (DADGAD)")
+            nameLists.add("Celtic Tuning")
+            letterLists.add(arrayListOf("D", "A", "D", "G", "A", "D"))
+            numberLists.add(arrayListOf(2, 2, 3, 3, 3, 4))
+            sharpLists.add(arrayListOf(0, 0, 0, 0, 0, 0))
+            frequencyLists.add(floatArrayOf(calculateFrequency("D", 2), calculateFrequency("A", 2),
+                calculateFrequency("D", 3), calculateFrequency("G", 3),
+                calculateFrequency("A", 3), calculateFrequency("D", 4)))
+
+            list.add("D Standard (DGCFAD)")
+            nameLists.add("D Standard")
+            letterLists.add(arrayListOf("D", "G", "C", "F", "A", "D"))
+            numberLists.add(arrayListOf(2, 2, 3, 3, 3, 4))
+            sharpLists.add(arrayListOf(0, 0, 0, 0, 0, 0))
+            frequencyLists.add(floatArrayOf(calculateFrequency("D", 2), calculateFrequency("G", 2),
+                calculateFrequency("C", 3), calculateFrequency("F", 3),
+                calculateFrequency("A", 3), calculateFrequency("D", 4)))
+
+            list.add("Open D (DADF#AD)")
+            nameLists.add("Open D")
+            letterLists.add(arrayListOf("D", "A", "D", "F", "A", "D"))
+            numberLists.add(arrayListOf(2, 2, 3, 3, 3, 4))
+            sharpLists.add(arrayListOf(0, 0, 0, 1, 0, 0))
+            frequencyLists.add(floatArrayOf(calculateFrequency("D", 2), calculateFrequency("A", 2),
+                calculateFrequency("D", 3), calculateFrequency("F#", 3),
+                calculateFrequency("A", 3), calculateFrequency("D", 4)))
+
+            list.add("Open C (CGCGCE)")
+            nameLists.add("Open C")
+            letterLists.add(arrayListOf("C", "G", "C", "G", "C", "E"))
+            numberLists.add(arrayListOf(2, 2, 3, 3, 4, 4))
+            sharpLists.add(arrayListOf(0, 0, 0, 0, 0, 0))
+            frequencyLists.add(floatArrayOf(calculateFrequency("C", 2), calculateFrequency("G", 2),
+                calculateFrequency("C", 3), calculateFrequency("G", 3),
+                calculateFrequency("C", 4), calculateFrequency("E", 4)))
+
+            list.add("Drop C (CGCFAD)")
+            nameLists.add("Drop C")
+            letterLists.add(arrayListOf("C", "G", "C", "F", "A", "D"))
+            numberLists.add(arrayListOf(2, 2, 3, 3, 3, 4))
+            sharpLists.add(arrayListOf(0, 0, 0, 0, 0, 0))
+            frequencyLists.add(floatArrayOf(calculateFrequency("C", 2), calculateFrequency("G", 2),
+                calculateFrequency("C", 3), calculateFrequency("F", 3),
+                calculateFrequency("A", 3), calculateFrequency("D", 4)))
+        }
+
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         toolbar.title = "Fingerstyle Guitar Tuner"
         recyclerViewLayoutManager = LinearLayoutManager(this)
-
         recyclerViewAdapter = MyAdapter(list)
         recyclerView = findViewById<RecyclerView>(R.id.tuneView).apply {
             layoutManager = recyclerViewLayoutManager
             adapter = recyclerViewAdapter
         }
+
         registerForContextMenu(recyclerView)
         recyclerView.addOnItemTouchListener(
             RecyclerItemClickListener(this, recyclerView, object : RecyclerItemClickListener.OnItemClickListener {
@@ -187,6 +204,7 @@ class MainActivity : AppCompatActivity() {
                 }
             })
         )
+
         fab.setOnClickListener {
             if (::buzzer.isInitialized) {
                 buzzer.stop()
@@ -300,6 +318,7 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra("letter", letterLists[tuneIndex])
                 intent.putExtra("number", numberLists[tuneIndex])
                 intent.putExtra("sharp", sharpLists[tuneIndex])
+                intent.putExtra("frequency", frequencyLists[tuneIndex])
                 startActivityForResult(intent, LAUNCH_ADD_TUNE)
                 return true
             }
@@ -316,7 +335,7 @@ class MainActivity : AppCompatActivity() {
                     override fun onFinish() {
                     }
                     override fun onTick(millisUntilFinished: Long) {
-                        var volume: Int
+                        val volume: Int
                         val frequency = frequencyLists[tuneIndex][count]
                         if (frequency < 100) {
                             volume = 150
@@ -377,8 +396,76 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_reset -> {
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle("Reset Tune List")
+                builder.setMessage("Are you sure you want to restore the default tune list? This will delete all saved tunes and restart the app.")
+
+                val dialogClickListener = DialogInterface.OnClickListener { _, which ->
+                    when (which) {
+                        DialogInterface.BUTTON_POSITIVE -> {
+                            val editor = pref.edit()
+                            editor.clear()
+                            editor.apply()
+                            val intent = intent
+                            isReset = true
+                            finish()
+                            startActivity(intent)
+                        }
+                        DialogInterface.BUTTON_NEGATIVE -> {
+                        }
+                    }
+                }
+                // Set the alert dialog positive/yes button
+                builder.setPositiveButton("Yes",dialogClickListener)
+
+                // Set the alert dialog negative/no button
+                builder.setNegativeButton("No",dialogClickListener)
+
+                val dialog = builder.create()
+                dialog.show()
+                return true
+            }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (!isReset) {
+            val editor = pref.edit()
+            val gson = Gson()
+            val json = gson.toJson(DataHelper(list, nameLists, letterLists, numberLists, sharpLists, frequencyLists))
+            editor.putString("data", json)
+            editor.apply()
+        }
+        isReset = false
+    }
+
+}
+
+class DataHelper(private val tuneList: ArrayList<String>, private val nameList: ArrayList<String>,
+                 private val letterList: ArrayList<ArrayList<String>>, private val numberList: ArrayList<ArrayList<Int>>,
+                 private val sharpList: ArrayList<ArrayList<Int>>, private val frequencyList: ArrayList<FloatArray>): Serializable {
+
+    fun getTunes(): ArrayList<String> {
+        return this.tuneList
+    }
+
+    fun getNames(): ArrayList<String> {
+        return this.nameList
+    }
+
+    fun getLetters(): ArrayList<ArrayList<String>> {
+        return this.letterList
+    }
+    fun getNumbers(): ArrayList<ArrayList<Int>> {
+        return this.numberList
+    }
+    fun getSharps(): ArrayList<ArrayList<Int>> {
+        return this.sharpList
+    }
+    fun getFrequencies(): ArrayList<FloatArray> {
+        return this.frequencyList
     }
 }

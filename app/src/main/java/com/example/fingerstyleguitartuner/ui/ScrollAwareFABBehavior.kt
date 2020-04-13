@@ -5,8 +5,10 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
+import com.example.fingerstyleguitartuner.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton.OnVisibilityChangedListener
+import kotlinx.android.synthetic.main.activity_add_tune.view.*
 
 class ScrollAwareFABBehavior(context: Context?, attrs: AttributeSet?) :
     FloatingActionButton.Behavior() {
@@ -31,9 +33,11 @@ class ScrollAwareFABBehavior(context: Context?, attrs: AttributeSet?) :
                     fab.visibility = View.INVISIBLE
                 }
             })
+            child.isClickable = false
         } else if (dyConsumed < 0 && child.visibility != View.VISIBLE) {
             // User scrolled up and the FAB is currently not visible -> show the FAB
             child.show()
+            child.isClickable = true
         }
     }
 }

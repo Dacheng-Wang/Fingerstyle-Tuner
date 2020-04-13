@@ -3,6 +3,7 @@ package com.example.fingerstyleguitartuner.ui
 import android.content.Context
 import android.graphics.*
 import android.os.Build
+import android.os.Handler
 import android.util.AttributeSet
 import android.view.View
 import android.widget.TextView
@@ -288,34 +289,32 @@ class CircleTunerView: View {
             centerY + indicatorBottomRadius * sin(bottomAngleRadians.toDouble()).toFloat()
         invalidate()
     }
-
-    fun updateIndicator2Angle(view: TextView, targetFrequency: Double): Int {
+    fun updateIndicator2Angle(view: TextView, targetFrequency: Double): Double {
         val capturedFrequency = (view.tag as Float).toDouble()
         val targetAngle = currentAngleRadians
-        return if (capturedFrequency >= targetFrequency / 2 && capturedFrequency <= targetFrequency * 2) {
+        if (capturedFrequency >= targetFrequency / 2 && capturedFrequency <= targetFrequency * 2) {
             val capturedCents = PitchConverter.hertzToAbsoluteCent(capturedFrequency)
             val targetCents = PitchConverter.hertzToAbsoluteCent(targetFrequency)
             val centsDiff = capturedCents - targetCents
             val angleDiff = (centsDiff / 1200 * radian360).toFloat()
             val angleResult = normalizeAngle(targetAngle + angleDiff)
-
             updateIndicatorAngle(angleResult, indicator2Point1, indicator2Point2, indicator2Point3)
-            0
-        } else {
-            if (capturedFrequency < targetFrequency / 2) -1
-            else 1
         }
+        return capturedFrequency - targetFrequency
     }
 
     fun outOfTuneChangeColor() {
-        innerCirclePaint.color = ContextCompat.getColor(context, R.color.attention)
+        innerCirclePaint.color = stateOutOfTuneCircleColor
         invalidate()
     }
-    fun inTuneChangeColor() {
+    fun inRangeChangeColor() {
         innerCirclePaint.color = innerCircleColor
         invalidate()
     }
-
+    fun inTuneChangeColor() {
+        innerCirclePaint.color = stateInTuneCircleColor
+        invalidate()
+    }
 
     class NotePosition internal constructor(val name: String, val x: Float, val y: Float)
 }

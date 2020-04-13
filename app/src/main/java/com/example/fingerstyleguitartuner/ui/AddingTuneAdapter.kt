@@ -13,8 +13,7 @@ import net.mabboud.android_tone_player.OneTimeBuzzer
 import kotlin.math.pow
 
 
-class AddingTuneAdapter(private val tuneList: ArrayList<String>, private val letterList: ArrayList<String>? = null,
-                               private val numberList: ArrayList<Int>? = null, private val sharpList: ArrayList<Int>? = null) :
+class AddingTuneAdapter(val dataList: ArrayList<Array<Any>>) :
     RecyclerView.Adapter<AddingTuneAdapter.AddingTuneViewHolder>() {
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -153,57 +152,19 @@ class AddingTuneAdapter(private val tuneList: ArrayList<String>, private val let
     override fun onBindViewHolder(holder: AddingTuneViewHolder, position: Int) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        holder.textView.text = tuneList[position]
-        if (letterList != null && numberList != null && sharpList != null && letterList.size > position) {
-            holder.view.findViewById<Spinner>(R.id.tune_letter).setSelection(viewGroup.resources.getStringArray(R.array.tuneLetterList).indexOf(letterList[position]))
-            holder.view.findViewById<Spinner>(R.id.tune_number).setSelection(viewGroup.resources.getStringArray(R.array.tuneNumberList).indexOf(numberList[position].toString()))
-            holder.view.findViewById<CheckBox>(R.id.tune_sharp_checkBox).isChecked = sharpList[position] == 1
+        holder.textView.text = dataList[position][0].toString()
+        if (dataList.size > position) {
+            holder.view.findViewById<Spinner>(R.id.tune_letter).setSelection(viewGroup.resources.getStringArray(R.array.tuneLetterList).indexOf(dataList[position][2]))
+            holder.view.findViewById<Spinner>(R.id.tune_number).setSelection(viewGroup.resources.getStringArray(R.array.tuneNumberList).indexOf(dataList[position][3].toString()))
+            holder.view.findViewById<CheckBox>(R.id.tune_sharp_checkBox).isChecked = dataList[position][4] == 1
         }
     }
 
-    override fun getItemCount() = tuneList.size
+    override fun getItemCount() = dataList.size
 }
 
-class AddingTuneItemClickListener(
-    context: Context?,
-    recyclerView: RecyclerView,
-    private val mListener: OnItemClickListener?
-) :
-    OnItemTouchListener {
+fun AddingTuneAdapter.getItemAtPosition(position: Int) = dataList[position]
 
-    interface OnItemClickListener {
-        fun onItemClick(view: View?, position: Int)
-        fun onLongItemClick(view: View?, position: Int)
-    }
-
-    var mGestureDetector: GestureDetector
-    override fun onInterceptTouchEvent(view: RecyclerView, e: MotionEvent): Boolean {
-        val childView: View? = view.findChildViewUnder(e.x, e.y)
-        if (childView != null && mListener != null && mGestureDetector.onTouchEvent(e)) {
-            mListener.onItemClick(childView, view.getChildAdapterPosition(childView))
-            return true
-        }
-        return false
-    }
-
-    override fun onTouchEvent(view: RecyclerView, motionEvent: MotionEvent) {}
-    override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
-
-    init {
-        mGestureDetector = GestureDetector(context, object : SimpleOnGestureListener() {
-            override fun onSingleTapUp(e: MotionEvent): Boolean {
-                return true
-            }
-
-            override fun onLongPress(e: MotionEvent) {
-                val child: View? = recyclerView.findChildViewUnder(e.x, e.y)
-                if (child != null && mListener != null) {
-                    mListener.onLongItemClick(child, recyclerView.getChildAdapterPosition(child))
-                }
-            }
-        })
-    }
-}
 fun calculateFrequency(noteLetter: String, noteNumber: Int): Float{
     val baseFrequency = 440
     val exp = (1.0/12.0).toFloat()
@@ -232,7 +193,7 @@ var isPlaying = false
 var previousView: View? = null
 var firstTime = true
 fun produceSoundFromFrequency(view: View, frequency: Float, seconds: Int) {
-    var volume: Int
+    val volume: Int
     if (frequency < 100) {
         volume = 150
     }
