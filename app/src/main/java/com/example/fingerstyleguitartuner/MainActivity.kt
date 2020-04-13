@@ -126,8 +126,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         setContentView(R.layout.activity_main)
+        toolbar.title = "Fingerstyle Tuner"
         setSupportActionBar(toolbar)
-        toolbar.title = "Fingerstyle Guitar Tuner"
         recyclerViewLayoutManager = LinearLayoutManager(this)
         recyclerViewAdapter = MyAdapter(list)
         recyclerView = findViewById<RecyclerView>(R.id.tuneView).apply {
