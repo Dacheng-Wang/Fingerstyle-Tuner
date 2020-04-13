@@ -1,2 +1,2 @@
 # Fingerstyle-Tuner
-A guitar tuner for standard and non-standard tuning
+A guitar tuner with ability for users to create and save different tunings.
