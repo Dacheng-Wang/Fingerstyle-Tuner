@@ -14,7 +14,7 @@
         android:id="@+id/string_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_high"
+        android:layout_marginTop="@dimen/spacing_medium"
         android:textSize="@dimen/text_size_large"
         android:gravity="center"
         android:textAlignment="center"
@@ -33,5 +33,5 @@
         android:layout_gravity="bottom|center_horizontal"
         android:textSize="@dimen/text_size_large"
         android:textAlignment="center"
-        android:layout_marginBottom="@dimen/spacing_high"/>
+        android:layout_marginBottom="@dimen/spacing_medium"/>
 </FrameLayout>
